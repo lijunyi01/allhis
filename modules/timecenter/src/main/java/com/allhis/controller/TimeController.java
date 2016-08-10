@@ -1,7 +1,7 @@
 package com.allhis.controller;
 
-import com.allhis.timecenter.AuthResp;
 import com.allhis.service.TimeService;
+import com.allhis.timecenter.TimeResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,23 +24,18 @@ public class TimeController {
 
     private static Logger logger = LoggerFactory.getLogger(TimeController.class);
 
-    //http://localhost:8080/auth/authjson?name=test@139email.com&pass=11111&ip=192.168.0.1&platform=web
+    //http://localhost:8080/timesearch/timejson?yearname=鲁隐公&sequence=1
     @RequestMapping("/timejson")
-    public AuthResp authing(
-            @RequestParam(value="name", defaultValue="") String name,
-            @RequestParam(value="pass", defaultValue="") String pass,
-            @RequestParam(value="ip", defaultValue="")String ip,
-            @RequestParam(value="platform", defaultValue="") String platform,
+    public TimeResp authing(
+            @RequestParam(value="yearname") String yearname,
+            @RequestParam(value="sequence") String sequence,
             HttpServletRequest httpServletRequest
     ) {
-        int errorCode;
-        String errorMessage;
         String requestIp = httpServletRequest.getRemoteAddr();
-        logger.info("client [{}] auth param: umid={} ip={} platform={}",requestIp,name,ip,platform);
-        errorCode = timeService.getErrorCode(name,pass,ip,platform);
-        errorMessage = timeService.getErrorMessage(errorCode);
-        logger.info("server [{}] auth response-json:{} {}",requestIp,errorCode,errorMessage);
-        return new AuthResp(errorCode,errorMessage);
+        logger.info("client [{}] search param: yearname={} sequence={}",requestIp,yearname,sequence);
+
+        TimeResp timeResp = timeService.searchYear(yearname,sequence);
+        return timeResp;
     }
 
 //    @RequestMapping("/authplain")

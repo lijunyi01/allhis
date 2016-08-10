@@ -1,5 +1,7 @@
 package com.allhis.service;
 
+import com.allhis.dao.MysqlDao;
+import com.allhis.timecenter.TimeResp;
 import com.allhis.toolkit.GlobalTools;
 import org.apache.mina.util.CopyOnWriteMap;
 import org.slf4j.Logger;
@@ -29,8 +31,8 @@ public class TimeService {
     private long blc;
 
 
-//    @Autowired
-//    private MysqlEmailDao mysqlEmailDao;
+    @Autowired
+    private MysqlDao mysqlDao;
 //    @Autowired
 //    private MysqlLogDao mysqlLogDao;
 //
@@ -83,31 +85,49 @@ public class TimeService {
 //        }
 //        return ret;
 //    }
-//
-//    public String getErrorMessage(int errorCode){
-//        String ret;
-//        if(errorCode == 0) {
-//            ret = "成功";
-//        }else if(errorCode == -1){
-//            ret = "用户不存在";
-//        }else if(errorCode == -2){
-//            ret = "用户名密码错";
-//        }else if(errorCode == -3){
-//            ret = "无权限";
-//        }else if(errorCode == -10){
-//            ret = "拒绝从此ip登录";
-//        }else if(errorCode >=-14 && errorCode <= -12) {
-//            ret = "错误次数太多，可能在非法尝试密码";
-//        }else if(errorCode == -20) {
-//            ret = "登录太频繁";
-//        }else if(errorCode >=-39 && errorCode <= -30){
-//            ret = "登录参数被列入黑名单，暂时不允许登录";
-//        }else{
-//            ret="失败";
-//        }
-//
-//        return ret;
-//    }
+
+
+    public TimeResp searchYear(String yearname,String sequence){
+        TimeResp timeResp = new TimeResp();
+        if(yearname == null || sequence == null){
+            timeResp.setErrorCode(-1);
+            timeResp.setErrorMessage(getErrorMessage(-1));
+        }else {
+            int sq = GlobalTools.convertStringToInt(sequence);
+            if(sq == -1000000000 || sq <1){
+                timeResp.setErrorCode(-2);
+                timeResp.setErrorMessage(getErrorMessage(-2));
+            }else{
+                int baseYear = mysqlDao.getBaseYear(yearname);
+                if(baseYear == 100000000){
+                    timeResp.setErrorCode(-3);
+                    timeResp.setErrorMessage(getErrorMessage(-3));
+                }else{
+                    timeResp.setErrorCode(0);
+                    timeResp.setErrorMessage(getErrorMessage(0));
+                    timeResp.setYear(baseYear + sq -1);
+                }
+            }
+        }
+        return timeResp;
+    }
+
+    public String getErrorMessage(int errorCode){
+        String ret;
+        if(errorCode == 0) {
+            ret = "成功";
+        }else if(errorCode == -1){
+            ret = "参数错误";
+        }else if(errorCode == -2){
+            ret = "年代偏移量错误";
+        }else if(errorCode == -3){
+            ret = "未查询到相关年号";
+        }else{
+            ret="失败";
+        }
+
+        return ret;
+    }
 //
 //    private void initGlobalData(){
 //        List<Map<String,Object>> mapList = mysqlEmailDao.getLimitedUser();

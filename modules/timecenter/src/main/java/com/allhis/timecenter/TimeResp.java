@@ -5,24 +5,19 @@ package com.allhis.timecenter;
  * ok
  */
 public class TimeResp {
-    private int authCode;
-    private String authMessage;
+    private int errorCode;
+    private String errorMessage;
     private int year;
 
     public TimeResp(){
 
     }
 
-    public TimeResp(int authCode, String authMessage){
-        this.authCode = authCode;
-        this.authMessage = authMessage;
+    public int getErrorCode(){
+        return this.errorCode;
     }
-
-    public int getAuthCode(){
-        return this.authCode;
-    }
-    public String getAuthMessage(){
-        return this.authMessage;
+    public String getErrorMessage(){
+        return this.errorMessage;
     }
     public int getYear(){
         return this.year;
@@ -30,6 +25,14 @@ public class TimeResp {
 
     public void setYear(int year){
         this.year = year;
+    }
+
+    public void setErrorCode(int errorCode){
+        this.errorCode = errorCode;
+    }
+
+    public void setErrorMessage(String errorMessage){
+        this.errorMessage = errorMessage;
     }
 
 

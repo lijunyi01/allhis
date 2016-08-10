@@ -20,6 +20,18 @@ public class MysqlDao {
     @Qualifier("jdbctemplate1")
     private JdbcTemplate jdbcTemplate;
 
+    public int getBaseYear(String yearName){
+        int ret = 100000000;
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from yearbase where yearname=?",yearName);
+        if(mapList.size()==1){
+            Map<String,Object> map = mapList.get(0);
+            if(map.get("firstyear")!=null){
+                ret = GlobalTools.convertStringToInt(map.get("firstyear").toString());
+            }
+        }
+        return ret;
+    }
+
 //    //查询最近几秒内登录失败的记录数 ,按ip和用户名过滤
 //    public int getFailCount1(String name,String ip,int beforeSeconds){
 //        int ret = 0;

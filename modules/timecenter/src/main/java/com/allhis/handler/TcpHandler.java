@@ -114,41 +114,41 @@ public class TcpHandler extends IoHandlerAdapter {
 
 		String inputUpperCase = input.toUpperCase();
 
-		if (inputUpperCase.startsWith("AUTH")) {
-			//auth umid=ljy@allcomchina.com<[CDATA]>ip=202.96.209.133<[CDATA]>pass=password<[CDATA]>platform=web
-			String umid;
-			String ip;
-			String pass;
-			String platform;
-			String a = input.substring("AUTH".length(),input.length());
-			a = a.trim();
-			if (a !=null && !a.isEmpty()){
-				Map<String,String> map = GlobalTools.parseInput(a,"\\<\\[CDATA\\]\\>");
-				umid = map.get("umid");
-				ip = map.get("ip");
-				pass = map.get("pass");
-				platform = map.get("platform");
-				if(umid ==null || ip ==null || pass==null ||platform ==null){
-					ret = "-err PARAM ERROR";
-				}else{
-					int iret = timeService.getErrorCode(umid,pass,ip,platform);
-					String errorMessage = timeService.getErrorMessage(iret);
-					if(iret ==0){
-						ret = "+ok "+iret+" "+errorMessage;
-					}else{
-						ret = "+err "+iret+" "+errorMessage;
-					}
-				}
-			}else{
-				ret = "-err PARAM ERROR";
-			}
-		} else if (inputUpperCase.startsWith("QUIT")) {
-			ret = "QUIT";
-		} else if(inputUpperCase.startsWith("HELO")){
-			ret = "550 ";
-		} else{
-			ret = "QUIT";
-		}
+//		if (inputUpperCase.startsWith("AUTH")) {
+//			//auth umid=ljy@allcomchina.com<[CDATA]>ip=202.96.209.133<[CDATA]>pass=password<[CDATA]>platform=web
+//			String umid;
+//			String ip;
+//			String pass;
+//			String platform;
+//			String a = input.substring("AUTH".length(),input.length());
+//			a = a.trim();
+//			if (a !=null && !a.isEmpty()){
+//				Map<String,String> map = GlobalTools.parseInput(a,"\\<\\[CDATA\\]\\>");
+//				umid = map.get("umid");
+//				ip = map.get("ip");
+//				pass = map.get("pass");
+//				platform = map.get("platform");
+//				if(umid ==null || ip ==null || pass==null ||platform ==null){
+//					ret = "-err PARAM ERROR";
+//				}else{
+//					int iret = timeService.getErrorCode(umid,pass,ip,platform);
+//					String errorMessage = timeService.getErrorMessage(iret);
+//					if(iret ==0){
+//						ret = "+ok "+iret+" "+errorMessage;
+//					}else{
+//						ret = "+err "+iret+" "+errorMessage;
+//					}
+//				}
+//			}else{
+//				ret = "-err PARAM ERROR";
+//			}
+//		} else if (inputUpperCase.startsWith("QUIT")) {
+//			ret = "QUIT";
+//		} else if(inputUpperCase.startsWith("HELO")){
+//			ret = "550 ";
+//		} else{
+//			ret = "QUIT";
+//		}
 		return ret;
 	}
 

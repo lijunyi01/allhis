@@ -121,7 +121,7 @@ public class GlobalTools {
 
 //    字符串转数字,-10000表示转换失败
     public static int convertStringToInt(String sValue) {
-        int iValue = -10000;
+        int iValue = -1000000000;
         if(isNumeric(sValue)) {
             try {
                 iValue = Integer.parseInt(sValue);
@@ -133,7 +133,7 @@ public class GlobalTools {
     }
 
     public static long convertStringToLong(String sValue) {
-        long lValue = -10000;
+        long lValue = -1000000000;
         if(isNumeric(sValue)) {
             try {
                 lValue = Long.parseLong(sValue);

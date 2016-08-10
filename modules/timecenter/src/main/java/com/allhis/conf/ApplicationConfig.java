@@ -104,7 +104,7 @@ public class ApplicationConfig {
         hikariDataSource.setPassword(idbPassword);
         hikariDataSource.setJdbcUrl(idbUrl);
         hikariDataSource.setMaximumPoolSize(3);
-        hikariDataSource.setConnectionTestQuery("select count(*) from iprofile");
+        hikariDataSource.setConnectionTestQuery("select count(*) from yearbase");
         return hikariDataSource;
     }
 
