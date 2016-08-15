@@ -98,14 +98,20 @@ public class TimeService {
                 timeResp.setErrorCode(-2);
                 timeResp.setErrorMessage(getErrorMessage(-2));
             }else{
-                int baseYear = mysqlDao.getBaseYear(yearname);
-                if(baseYear == 100000000){
+                int nameid = mysqlDao.getIdByName(yearname);
+                if(nameid<0){
                     timeResp.setErrorCode(-3);
                     timeResp.setErrorMessage(getErrorMessage(-3));
-                }else{
-                    timeResp.setErrorCode(0);
-                    timeResp.setErrorMessage(getErrorMessage(0));
-                    timeResp.setYear(baseYear + sq -1);
+                }else {
+                    int baseYear = mysqlDao.getBaseYear(nameid);
+                    if (baseYear == 100000000) {
+                        timeResp.setErrorCode(-4);
+                        timeResp.setErrorMessage(getErrorMessage(-4));
+                    } else {
+                        timeResp.setErrorCode(0);
+                        timeResp.setErrorMessage(getErrorMessage(0));
+                        timeResp.setYear(baseYear + sq - 1);
+                    }
                 }
             }
         }
@@ -120,8 +126,10 @@ public class TimeService {
             ret = "参数错误";
         }else if(errorCode == -2){
             ret = "年代偏移量错误";
-        }else if(errorCode == -3){
+        }else if(errorCode == -3) {
             ret = "未查询到相关年号";
+        }else if(errorCode == -4){
+            ret = "查询元年失败";
         }else{
             ret="失败";
         }

@@ -20,13 +20,25 @@ public class MysqlDao {
     @Qualifier("jdbctemplate1")
     private JdbcTemplate jdbcTemplate;
 
-    public int getBaseYear(String yearName){
+    public int getBaseYear(int nameid){
         int ret = 100000000;
-        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from yearbase where yearname=?",yearName);
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from yearbase where nameid=?",nameid);
         if(mapList.size()==1){
             Map<String,Object> map = mapList.get(0);
             if(map.get("firstyear")!=null){
                 ret = GlobalTools.convertStringToInt(map.get("firstyear").toString());
+            }
+        }
+        return ret;
+    }
+
+    public int getIdByName(String name){
+        int ret = -1;
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select nameid from multilanguagenames where name=?",name);
+        if(mapList.size()==1){
+            Map<String,Object> map = mapList.get(0);
+            if(map.get("nameid")!=null){
+                ret = GlobalTools.convertStringToInt(map.get("nameid").toString());
             }
         }
         return ret;

@@ -1,31 +1,56 @@
 /*建库*/
 create database allhis default character set utf8;
 
+-- 用于多语言支持
+DROP TABLE IF EXISTS multilanguagenames;
+CREATE TABLE multilanguagenames(
+    id INT NOT NULL AUTO_INCREMENT,
+    nameid INT NOT NULL,
+    name VARCHAR(32) NOT NULL ,
+    languagetype VARCHAR(8) NOT NULL ,
+    PRIMARY KEY (id),
+    UNIQUE KEY (name)
+)ENGINE = MYISAM;
+
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (1,'鲁隐公','cn');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (1,'luyingong','en');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (2,'鲁庄公','cn');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (2,'luzhuanggong','en');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (3,'周敬王','cn');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (4,'周元王','cn');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (5,'周赧王','cn');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (6,'成化','cn');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (7,'洪宪','cn');
+INSERT INTO multilanguagenames(nameid,name,languagetype) VALUES (8,'民国','cn');
+
 -- 用于通过年号查公元年份
 drop table if exists yearbase;
 create table yearbase(
     id int not null auto_increment,
-    yearname varchar(100) not null,
+    -- 对应于multilanguagenames表的nameid字段
+    nameid int not null,
     firstyear int,
     lastyear int,
+    comment VARCHAR(32),
     primary key  (`id`),
-    UNIQUE KEY (`yearname`)
+    UNIQUE KEY (`nameid`)
 )ENGINE = MYISAM;
 
-insert into yearbase(yearname,firstyear) values('鲁隐公',-722);
-insert into yearbase(yearname,firstyear) values('鲁庄公',-693);
-insert into yearbase(yearname,firstyear) values('周敬王',-519);
-insert into yearbase(yearname,firstyear) values('周元王',-475);
-insert into yearbase(yearname,firstyear) values('周赧王',-314);
-insert into yearbase(yearname,firstyear) values('成化',1465);
-insert into yearbase(yearname,firstyear) values('洪宪',1916);
-insert into yearbase(yearname,firstyear) values('民国',1912);
+insert into yearbase(nameid,firstyear,comment) values(1,-722,'鲁隐公');
+insert into yearbase(nameid,firstyear,comment) values(2,-693,'鲁庄公');
+insert into yearbase(nameid,firstyear,comment) values(3,-519,'周敬王');
+insert into yearbase(nameid,firstyear,comment) values(4,-475,'周元王');
+insert into yearbase(nameid,firstyear,comment) values(5,-314,'周赧王');
+insert into yearbase(nameid,firstyear,comment) values(6,1465,'成化');
+insert into yearbase(nameid,firstyear,comment) values(7,1916,'洪宪');
+insert into yearbase(nameid,firstyear,comment) values(8,1912,'民国');
 
 -- 历史时期表，用于记录各个历史时期的区间
 drop table if exists period;
 create table period(
     id int not null auto_increment,
-    periodname varchar(100) not null,
+    -- 对应于multilanguagenames表的nameid字段
+    periodnameid INT not null,
     -- 历史时期的类型，例如：中国历史时期，埃及历史时期等
     periodtype int,
     -- 历史时期的级别，1:朝代或时期  2:子时期  3:二级子时期  10: 帝系  11:年号
