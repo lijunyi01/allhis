@@ -44,6 +44,22 @@ public class MysqlDao {
         return ret;
     }
 
+    public String getNameById(int nameid,String area){
+        String ret = null;
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select name from multilanguagenames where nameid=? and area=?", nameid, area);
+        if(mapList.size()==1){
+            Map<String,Object> map = mapList.get(0);
+            if(map.get("name")!=null){
+                ret = map.get("name").toString();
+            }
+        }
+        return ret;
+    }
+
+    public List<Map<String,Object>> getPeriodInfo(int year,int periodtype){
+        return jdbcTemplate.queryForList("select * from period where periodtype=? and (beginyear<=? and endyear>=?)",periodtype,year,year);
+    }
+
 //    //查询最近几秒内登录失败的记录数 ,按ip和用户名过滤
 //    public int getFailCount1(String name,String ip,int beforeSeconds){
 //        int ret = 0;

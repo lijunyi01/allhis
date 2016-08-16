@@ -1,16 +1,19 @@
-package com.allhis.timecenter;
+package com.allhis.bean;
+
+import java.util.List;
 
 /**
  * Created by ljy on 16/7/1.
  * ok
  */
-public class TimeResp {
+public class PeriodResp {
     private int errorCode;
     private String errorMessage;
-    private int year;
+    private List<PeriodBean> periodBeanList;
 
-    public TimeResp(){
-
+    public PeriodResp(){
+        this.errorCode = -1;
+        this.errorMessage = "failed";
     }
 
     public int getErrorCode(){
@@ -19,12 +22,9 @@ public class TimeResp {
     public String getErrorMessage(){
         return this.errorMessage;
     }
-    public int getYear(){
-        return this.year;
-    }
 
-    public void setYear(int year){
-        this.year = year;
+    public List<PeriodBean> getPeriodBeanList(){
+        return this.periodBeanList;
     }
 
     public void setErrorCode(int errorCode){
@@ -33,6 +33,10 @@ public class TimeResp {
 
     public void setErrorMessage(String errorMessage){
         this.errorMessage = errorMessage;
+    }
+
+    public void setPeriodBeanList(List<PeriodBean> periodBeanList){
+        this.periodBeanList = periodBeanList;
     }
 
 

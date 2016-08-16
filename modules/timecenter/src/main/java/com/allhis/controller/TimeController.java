@@ -1,7 +1,8 @@
 package com.allhis.controller;
 
 import com.allhis.service.TimeService;
-import com.allhis.timecenter.TimeResp;
+import com.allhis.bean.PeriodResp;
+import com.allhis.bean.TimeResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +25,12 @@ public class TimeController {
 
     private static Logger logger = LoggerFactory.getLogger(TimeController.class);
 
-    //http://localhost:8080/timesearch/timejson?yearname=鲁隐公&sequence=1
-    @RequestMapping("/timejson")
-    public TimeResp authing(
-            @RequestParam(value="yearname") String yearname,
-            @RequestParam(value="sequence") String sequence,
+    //通过年号查公元纪年
+    //http://localhost:8080/timesearch/year?yearname=鲁隐公&sequence=1
+    @RequestMapping("/year")
+    public TimeResp time1(
+            @RequestParam(value="yearname",required = true) String yearname,
+            @RequestParam(value="sequence",required = true) int sequence,
             HttpServletRequest httpServletRequest
     ) {
         String requestIp = httpServletRequest.getRemoteAddr();
@@ -38,22 +40,19 @@ public class TimeController {
         return timeResp;
     }
 
-//    @RequestMapping("/authplain")
-//    public String authing2(
-//            @RequestParam(value="name", defaultValue="") String name,
-//            @RequestParam(value="pass", defaultValue="") String pass,
-//            @RequestParam(value="ip", defaultValue="") String ip,
-//            @RequestParam(value="platform", defaultValue="") String platform,
-//            HttpServletRequest httpServletRequest
-//    ) {
-//        int errorCode;
-//        String errorMessage;
-//        String requestIp = httpServletRequest.getRemoteAddr();
-//        logger.info("client [{}] auth param: umid={} ip={} platform={}",requestIp,name,ip,platform);
-//        errorCode = authService.getErrorCode(name,pass,ip,platform);
-//        errorMessage = authService.getErrorMessage(errorCode);
-//        logger.info("server [{}] auth response-plain:{} {}",requestIp,errorCode,errorMessage);
-//        return errorCode + " "+errorMessage;
-//    }
+    //通过公元年份查历史时期
+    //http://localhost:8080/timesearch/period?year=-998&area=cn
+    @RequestMapping("/period")
+    public PeriodResp time2(
+            @RequestParam(value="year",required = true) int year,
+            @RequestParam(value="periodtype",required = false,defaultValue = "1") int periodtype,
+            @RequestParam(value="area",required = false,defaultValue = "cn") String area,
+            HttpServletRequest httpServletRequest
+    ) {
+        String requestIp = httpServletRequest.getRemoteAddr();
+        logger.info("client [{}] search param: year={}",year);
 
+        PeriodResp periodResp = timeService.searchPeriod(year, periodtype,area);
+        return periodResp;
+    }
 }

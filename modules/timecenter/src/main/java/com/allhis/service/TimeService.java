@@ -1,19 +1,19 @@
 package com.allhis.service;
 
+import com.allhis.bean.PeriodBean;
+import com.allhis.bean.PeriodResp;
 import com.allhis.dao.MysqlDao;
-import com.allhis.timecenter.TimeResp;
+import com.allhis.bean.TimeResp;
 import com.allhis.toolkit.GlobalTools;
-import org.apache.mina.util.CopyOnWriteMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by ljy on 16/7/1.
@@ -33,95 +33,78 @@ public class TimeService {
 
     @Autowired
     private MysqlDao mysqlDao;
-//    @Autowired
-//    private MysqlLogDao mysqlLogDao;
-//
-//    private boolean isGlobalDataInited = false;
-//
-//    //全局变量，存放允许登录的ip（对特定用户作限制）
-//    public static List<String> ipList = new CopyOnWriteArrayList<>();
-//    //全局变量,存放特定用户的帐号，这些帐号只允许从特定ip登录
-//    public static List<String> userList = new CopyOnWriteArrayList<>();
-//
-//    //全局变量，存放黑名单name+ip /name/ip 及放入的时间（毫秒）
-//    public static Map<String,Long> blackList = new CopyOnWriteMap<>();
-//
-//
-//    //0:通过  -1:iprofile表里无此用户 －2:密码校验失败  －3:权限校验未通过
-//    //－10 至 -19 : verifyNameAndIp() 返回的错误
-//    //－20 至 -29 : extVerify() 返回的错误
-//    //-30 至 -39 : verifyBlacklist() 返回的错误
-//    public int getErrorCode(String name,String pass,String ip,String platform){
-//        int ret = -1;
-//        //初始化
-//        if(!isGlobalDataInited){
-//            initGlobalData();
-//            initMemoryTable();
-//            this.isGlobalDataInited = true;
-//        }
-//
-//        ret = verifyBlacklist(name,ip,platform);
-//
-//        if(ret == 0) {
-//            //校验ip是否被允许登录等，是否再尝试密码等
-//            ret = verifyNameAndIp(name, ip, platform);
-//        }
-//
-//        if(ret == 0){
-//            //校验是否登录太频繁
-//            ret = extVerify(name,ip,platform);
-//        }
-//
-//        //通过上述校验才继续校验其它内容；否则返回上述校验的错误码
-//        if(ret == 0){
-//            ret = verifyPassAndRight(name,pass,platform);
-//            if(ret != 0){
-//                mysqlLogDao.recordLoginFail(name,ip,platform,ret);
-//                mysqlLogDao.recordLoginFail_M(name,ip,platform,ret);
-//            }else{
-//                mysqlLogDao.recordLoginhistory(name,ip,platform);
-//                mysqlLogDao.recordLoginhistory_M(name,ip,platform);
-//            }
-//        }
-//        return ret;
-//    }
 
 
-    public TimeResp searchYear(String yearname,String sequence){
+    public TimeResp searchYear(String yearname,int sequence){
         TimeResp timeResp = new TimeResp();
-        if(yearname == null || sequence == null){
-            timeResp.setErrorCode(-1);
-            timeResp.setErrorMessage(getErrorMessage(-1));
-        }else {
-            int sq = GlobalTools.convertStringToInt(sequence);
-            if(sq == -1000000000 || sq <1){
-                timeResp.setErrorCode(-2);
-                timeResp.setErrorMessage(getErrorMessage(-2));
-            }else{
-                int nameid = mysqlDao.getIdByName(yearname);
-                if(nameid<0){
-                    timeResp.setErrorCode(-3);
-                    timeResp.setErrorMessage(getErrorMessage(-3));
-                }else {
-                    int baseYear = mysqlDao.getBaseYear(nameid);
-                    if (baseYear == 100000000) {
-                        timeResp.setErrorCode(-4);
-                        timeResp.setErrorMessage(getErrorMessage(-4));
-                    } else {
-                        timeResp.setErrorCode(0);
-                        timeResp.setErrorMessage(getErrorMessage(0));
-                        timeResp.setYear(baseYear + sq - 1);
-                    }
+        if(yearname.trim().length()>0 && sequence >=0){
+            int nameid = mysqlDao.getIdByName(yearname);
+            if(nameid>0){
+                int baseYear = mysqlDao.getBaseYear(nameid);
+                if (baseYear != 100000000) {
+                    timeResp.setErrorCode(0);
+                    timeResp.setErrorMessage(getErrorMessage(0));
+                    timeResp.setYear(baseYear + sequence - 1);
+                } else {
+                    log.error("failed in getBaseYear!nameid:{}",nameid);
                 }
+            }else{
+                log.error("failed in getIdByName!yearname:{},nameid:{}",yearname,nameid);
             }
+        }else {
+            log.error("param error!yearname:{},sequence:{}",yearname,sequence);
         }
         return timeResp;
+    }
+
+    public PeriodResp searchPeriod(int year,int periodtype,String area){
+        PeriodResp periodResp = new PeriodResp();
+        List<Map<String,Object>> mapList = mysqlDao.getPeriodInfo(year,periodtype);
+        int periodnameid = -1;
+        int periodlevel = -1;
+        int beginyear = 1000000;
+        int endyear = 1000000;
+        String periodName = null;
+        List<PeriodBean> periodBeanList = new ArrayList<>();
+        for(Map<String,Object> map:mapList){
+            if(map.get("periodnameid")!=null){
+                periodnameid = GlobalTools.convertStringToInt(map.get("periodnameid").toString());
+            }
+            if(map.get("periodlevel")!=null){
+                periodlevel = GlobalTools.convertStringToInt(map.get("periodlevel").toString());
+            }
+            if(map.get("beginyear")!=null){
+                beginyear = GlobalTools.convertStringToInt(map.get("beginyear").toString());
+            }
+            if(map.get("endyear")!=null){
+                endyear = GlobalTools.convertStringToInt(map.get("endyear").toString());
+            }
+            if(periodnameid!=-1 && periodlevel!=-1 && beginyear!=1000000 && endyear!=1000000){
+                periodName = mysqlDao.getNameById(periodnameid,area);
+                if(periodName != null){
+                    PeriodBean periodBean = new PeriodBean();
+                    periodBean.setPeriodName(periodName);
+                    periodBean.setPeriodLevel(periodlevel);
+                    periodBean.setFirstYear(beginyear);
+                    periodBean.setLastYear(endyear);
+                    periodBeanList.add(periodBean);
+                }
+            }else{
+                log.error("error in serarchPeriod! year:{},periodtype:{}",year,periodtype);
+            }
+        }
+        if(periodBeanList.size()>0){
+            periodResp.setErrorCode(0);
+            periodResp.setErrorMessage(getErrorMessage(0));
+            periodResp.setPeriodBeanList(periodBeanList);
+        }
+        return periodResp;
     }
 
     public String getErrorMessage(int errorCode){
         String ret;
         if(errorCode == 0) {
-            ret = "成功";
+            ret = "success";
         }else if(errorCode == -1){
             ret = "参数错误";
         }else if(errorCode == -2){
