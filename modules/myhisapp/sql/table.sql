@@ -16,8 +16,8 @@ CREATE TABLE myproject0(
     UNIQUE KEY (umid,name)
 )ENGINE = MYISAM;
 
-DROP TABLE IF EXISTS myprojectdetail0;
-CREATE TABLE myprojectdetail0(
+DROP TABLE IF EXISTS projectitem0;
+CREATE TABLE projectitem0(
     id INT NOT NULL AUTO_INCREMENT,
     -- 对应于myproject0表的id
     projectid INT,
@@ -33,5 +33,23 @@ CREATE TABLE myprojectdetail0(
     comment VARCHAR(256) NULL ,
     PRIMARY KEY (id),
     KEY (projectid,starttime),
+    KEY (umid)
+)ENGINE = MYISAM;
+
+DROP TABLE IF EXISTS itemfile0;
+CREATE TABLE itemfile0(
+    id INT NOT NULL AUTO_INCREMENT,
+    -- 对应于projectitem0表的id
+    itemid INT,
+    -- 以下两项用于冗余，用于方便地按projectid或umid删除数据等
+    projectid INT,
+    umid INT NOT NULL,
+    filename VARCHAR(256) NOT NULL ,
+    filesuffix VARCHAR(8) NULL ,
+    -- 文件存储时是路径；对象存储时是索引
+    filepath VARCHAR(128) NOT NULL ,
+    PRIMARY KEY (id),
+    KEY (itemid),
+    KEY (projectid),
     KEY (umid)
 )ENGINE = MYISAM;
