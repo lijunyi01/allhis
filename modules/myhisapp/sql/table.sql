@@ -7,7 +7,7 @@ CREATE TABLE myproject0(
     -- 对应于统一认证模块里的iprofile表（所有用户的密码，dbindex,tableindex都集中存于该表）的id
     umid INT NOT NULL,
     -- 项目名
-    name VARCHAR(32) NOT NULL ,
+    projectname VARCHAR(32) NOT NULL ,
     -- 项目创建时间
     createtime DATETIME,
     -- 最后修改时间
@@ -23,14 +23,14 @@ CREATE TABLE projectitem0(
     projectid INT,
     -- 对应于统一认证模块里的iprofile表（所有用户的密码，dbindex,tableindex都集中存于该表）的id
     umid INT NOT NULL,
-    -- 事件名称
+    -- 事件名称/标题
     itemname VARCHAR(128) NOT NULL ,
+    -- 事件更具体的内容
+    itemcontent VARCHAR(512) NULL ,
     -- 事件开始时间
     starttime DATETIME NOT NULL ,
     -- 事件结束时间
     endtime DATETIME NULL ,
-    -- 事件备注
-    comment VARCHAR(256) NULL ,
     PRIMARY KEY (id),
     KEY (projectid,starttime),
     KEY (umid)
@@ -52,4 +52,11 @@ CREATE TABLE itemfile0(
     KEY (itemid),
     KEY (projectid),
     KEY (umid)
+)ENGINE = MYISAM;
+
+-- 用于测试
+DROP TABLE IF EXISTS test;
+CREATE TABLE test(
+    id INT,
+    PRIMARY KEY (id)
 )ENGINE = MYISAM;
