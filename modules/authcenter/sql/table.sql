@@ -30,3 +30,12 @@ create table `profile` (
     UNIQUE KEY (emailaddress)
 )ENGINE = MYISAM;
 
+drop table if exists `token`;
+create table `token` (
+    umid INT NOT NULL,
+    token VARCHAR(128) NOT NULL ,
+    createtime DATETIME NOT NULL,
+    PRIMARY KEY (umid,token),
+    KEY (createtime)
+)ENGINE = MYISAM;
+

@@ -9,10 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 
@@ -100,5 +97,18 @@ public class MysqlEmailDao {
             }
         }
         return ret;
+    }
+
+    public boolean setToken(int umid,String token,String createtime){
+        boolean ret = false;
+        int i = jdbcTemplate.update("insert into token(umid,token,createtime) values(?,?,?)",umid,token,createtime);
+        if(i>0){
+            ret = true;
+        }
+        return ret;
+    }
+
+    public void deleteOldToken(int seconds){
+        jdbcTemplate.update("delete from token where (now()-createtime)>?",seconds);
     }
 }

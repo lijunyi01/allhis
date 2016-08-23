@@ -19,12 +19,11 @@ public class ScheduledTasks {
     public ScheduledTasks(){
     }
 
-    //删除全局数据并重新初始化
+    //定期删除token表里的过期数据
     @Scheduled(cron = "${jobs.schedule1}")
     public void reinit() throws Exception{
 //    	log.info("************************ reinit **************************");
-//    	authService.reinitGlobalData();
-////		authService.getMaxtest();
+    	authService.deleteOldToken();
 //    	log.info("************************end reinit **************************");
 //
     }

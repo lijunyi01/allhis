@@ -1,5 +1,6 @@
 package com.allhis.service;
 
+import com.allhis.bean.RetMessage;
 import com.allhis.dao.MysqlEmailDao;
 import com.allhis.dao.MysqlLogDao;
 import com.allhis.toolkit.GlobalTools;
@@ -11,8 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -26,6 +29,8 @@ public class AuthService {
 
     @Value("${system.beforeseconds}")
     private int beforeSeconds;
+    @Value("${system.tokenlifecycle}")
+    private int tokenlifecycle;
 
     @Value("${system.blacklistlifecycle}")
     private long blc;
@@ -49,21 +54,67 @@ public class AuthService {
     public static Map<String,Long> blackList = new CopyOnWriteMap<>();
 
 
-    //0:通过  -1:iprofile表里无此用户 －2:密码校验失败  －3:权限校验未通过
-    //－10 至 -19 : verifyNameAndIp() 返回的错误
-    //－20 至 -29 : extVerify() 返回的错误
-    //-30 至 -39 : verifyBlacklist() 返回的错误
-    public int getErrorCode(String name,String pass,String ip,String platform){
-        int ret = -1;
+    public RetMessage auth(String name,String pass,String ip,String platform){
+        RetMessage retMessage = new RetMessage();
         //初始化
         if(!isGlobalDataInited){
-//            initGlobalData();
             initMemoryTable();
             this.isGlobalDataInited = true;
         }
 
         int umid = getUmidByName(name);
         if(umid > 0) {
+            int errorCode = getErrorCode(umid,pass,ip,platform);
+
+            //校验成功需额外返回umid,token,siteip,siteport 等信息
+            if(errorCode == 0){
+                //先设置默认的错误值
+                retMessage.setErrorCode("-100");
+                retMessage.setErrorMessage(getErrorMessage(-100));
+                String token = UUID.randomUUID().toString();
+                if(insertToken(umid,token)){
+                    List<Map<String,Object>> mapList = mysqlEmailDao.getIprofileInfo(umid);
+                    String siteip = null;
+                    String siteport = null;
+                    if(mapList.size()==1){
+                        Map<String,Object> map = mapList.get(0);
+                        if(map.get("siteip")!=null){
+                            siteip = map.get("siteip").toString();
+                        }
+                        if(map.get("siteport")!=null){
+                            siteport = map.get("siteport").toString();
+                        }
+                        if(siteip!=null && siteport!=null){
+                            retMessage.setErrorCode("0");
+                            retMessage.setErrorMessage(getErrorMessage(0));
+                            retMessage.setRetContent("umid="+umid+"<[CDATA]>token="+token+"<[CDATA]>siteip="+siteip+"<[CDATA]>siteport="+siteport);
+                        }
+                    }else{
+                        log.error("get iprofile info failed! umid:{}",umid);
+                    }
+                }else{
+                    log.error("insert token failed! umid:{},token:{}",umid,token);
+                }
+            }else{
+                retMessage.setErrorCode(errorCode+"");
+                retMessage.setErrorMessage(getErrorMessage(errorCode));
+            }
+        }else{
+            retMessage.setErrorCode("-1");
+            retMessage.setErrorMessage(getErrorMessage(-1));
+            log.error("{} not exists!",name);
+        }
+
+        return retMessage;
+    }
+
+
+    //0:通过  -1:iprofile表里无此用户 －2:密码校验失败  －3:权限校验未通过
+    //－10 至 -19 : verifyNameAndIp() 返回的错误
+    //－20 至 -29 : extVerify() 返回的错误
+    //-30 至 -39 : verifyBlacklist() 返回的错误
+    public int getErrorCode(int umid,String pass,String ip,String platform){
+        int ret = -1;
 
             ret = verifyBlacklist(umid, ip, platform);
 
@@ -88,7 +139,7 @@ public class AuthService {
                     mysqlLogDao.recordLoginhistory_M(umid, ip, platform);
                 }
             }
-        }
+
         return ret;
     }
 
@@ -96,9 +147,9 @@ public class AuthService {
         String ret;
         if(errorCode == 0) {
             ret = "成功";
-        }else if(errorCode == -1){
-            ret = "用户不存在";
-        }else if(errorCode == -2){
+        }else if(errorCode == -1){   //其实是用户名不存在
+            ret = "用户名密码错";
+        }else if(errorCode == -2){   //真正的用户名密码校验错
             ret = "用户名密码错";
         }else if(errorCode == -3){
             ret = "无权限";
@@ -280,12 +331,7 @@ public class AuthService {
         }
     }
 
-    //测试 queryforlist
-    public void getMaxtest(){
-        mysqlLogDao.getMaxId();
-    }
-
-    private int getUmidByName(String name){
+    public int getUmidByName(String name){
         int ret = -1;
         if(name.indexOf("@")>-1){     //邮件地址登录
             ret = mysqlEmailDao.getUmidByEmail(name);
@@ -293,5 +339,19 @@ public class AuthService {
             ret = mysqlEmailDao.getUmidByMobilenum(name);
         }
         return ret;
+    }
+
+    private boolean insertToken(int umid,String token){
+        boolean ret = false;
+        String nt = String.valueOf(GlobalTools.getTimeBefore(0));
+        if(mysqlEmailDao.setToken(umid,token,nt)){
+            ret = true;
+        }
+        return ret;
+    }
+
+    public void deleteOldToken(){
+        //tokenlifecycle单位为分钟，转化为秒
+        mysqlEmailDao.deleteOldToken(tokenlifecycle*60);
     }
 }

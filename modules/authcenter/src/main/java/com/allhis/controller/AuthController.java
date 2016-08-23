@@ -1,6 +1,6 @@
 package com.allhis.controller;
 
-import com.allhis.bean.AuthResp;
+import com.allhis.bean.RetMessage;
 import com.allhis.service.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,22 +26,20 @@ public class AuthController {
     private static Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     //http://localhost:8080/auth/authjson?name=test@139email.com&pass=11111&ip=192.168.0.1&platform=web
+    //http://localhost:8080/auth/authjson?name=18001831657&pass=11111&ip=192.168.0.1&platform=web
     @RequestMapping("/authjson")
-    public AuthResp authing(
+    public RetMessage authing(
             @RequestParam(value="name", defaultValue="") String name,
             @RequestParam(value="pass", defaultValue="") String pass,
             @RequestParam(value="ip", defaultValue="")String ip,
             @RequestParam(value="platform", defaultValue="") String platform,
             HttpServletRequest httpServletRequest
     ) {
-        int errorCode;
-        String errorMessage;
+
         String requestIp = httpServletRequest.getRemoteAddr();
         logger.info("client [{}] auth param: umid={} ip={} platform={}",requestIp,name,ip,platform);
-        errorCode = authService.getErrorCode(name,pass,ip,platform);
-        errorMessage = authService.getErrorMessage(errorCode);
-        logger.info("server [{}] auth response-json:{} {}",requestIp,errorCode,errorMessage);
-        return new AuthResp(errorCode,errorMessage);
+        RetMessage retMessage = authService.auth(name,pass,ip,platform);
+        return retMessage;
     }
 
 

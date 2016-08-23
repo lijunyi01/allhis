@@ -127,10 +127,11 @@ public class TcpHandler extends IoHandlerAdapter {
 				ip = map.get("ip");
 				pass = map.get("pass");
 				platform = map.get("platform");
-				if(umid ==null || ip ==null || pass==null ||platform ==null){
+				int iumid= authService.getUmidByName(umid);
+				if(iumid>0 || ip ==null || pass==null ||platform ==null){
 					ret = "-err PARAM ERROR";
 				}else{
-					int iret = authService.getErrorCode(umid,pass,ip,platform);
+					int iret = authService.getErrorCode(iumid,pass,ip,platform);
 					String errorMessage = authService.getErrorMessage(iret);
 					if(iret ==0){
 						ret = "+ok "+iret+" "+errorMessage;
