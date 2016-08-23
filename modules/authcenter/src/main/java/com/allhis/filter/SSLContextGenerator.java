@@ -21,8 +21,8 @@ public class SSLContextGenerator {
         SSLContext sslContext = null;
         try
         {
-            File keyStoreFile = new File("/appconf/authcenter/certificates/keystore.jks");
-            File trustStoreFile = new File("/appconf/authcenter/certificates/truststore.jks");
+            File keyStoreFile = new File("/appconf/ah_authcenter/certificates/keystore.jks");
+            File trustStoreFile = new File("/appconf/ah_authcenter/certificates/truststore.jks");
 
             if (keyStoreFile.exists() && trustStoreFile.exists()) {
                 final KeyStoreFactory keyStoreFactory = new KeyStoreFactory();
