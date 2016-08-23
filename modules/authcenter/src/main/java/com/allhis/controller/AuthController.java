@@ -42,5 +42,19 @@ public class AuthController {
         return retMessage;
     }
 
+    //http://localhost:8080/auth/authtoken?umid=1&token=38c92a61-490d-437f-9923-9442980a7d9e
+    @RequestMapping("/authtoken")
+    public RetMessage authtoken(
+            @RequestParam(value="umid", required = true) int umid,
+            @RequestParam(value="token", required = true) String token,
+            HttpServletRequest httpServletRequest
+    ) {
+
+        String requestIp = httpServletRequest.getRemoteAddr();
+        logger.info("token check param: umid={} token={}",umid,token);
+        RetMessage retMessage = authService.tokencheck(umid,token);
+        return retMessage;
+    }
+
 
 }

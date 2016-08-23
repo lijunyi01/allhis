@@ -109,6 +109,15 @@ public class MysqlEmailDao {
     }
 
     public void deleteOldToken(int seconds){
-        jdbcTemplate.update("delete from token where (now()-createtime)>?",seconds);
+        jdbcTemplate.update("delete from token where time_to_sec(timediff(now(),createtime))>?",seconds);
+    }
+
+    public int getTokenCount(int umid,String token,int seconds){
+        int ret =-1;
+        Map<String,Object> map = jdbcTemplate.queryForMap("select count(*) as count from token where umid=? and token=? and time_to_sec(timediff(now(),createtime))<?",umid,token,seconds);
+        if(map.get("count")!=null){
+            ret = GlobalTools.convertStringToInt(map.get("count").toString());
+        }
+        return ret;
     }
 }

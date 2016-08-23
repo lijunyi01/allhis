@@ -159,8 +159,10 @@ public class AuthService {
             ret = "错误次数太多，可能在非法尝试密码";
         }else if(errorCode == -20) {
             ret = "登录太频繁";
-        }else if(errorCode >=-39 && errorCode <= -30){
+        }else if(errorCode >=-39 && errorCode <= -30) {
             ret = "登录参数被列入黑名单，暂时不允许登录";
+        }else if(errorCode == -40){
+            ret = "token check failed";
         }else{
             ret="失败";
         }
@@ -353,5 +355,20 @@ public class AuthService {
     public void deleteOldToken(){
         //tokenlifecycle单位为分钟，转化为秒
         mysqlEmailDao.deleteOldToken(tokenlifecycle*60);
+    }
+
+    public RetMessage tokencheck(int umid,String token){
+        RetMessage retMessage = new RetMessage();
+        int count = mysqlEmailDao.getTokenCount(umid,token,tokenlifecycle*60);
+        if(count > 0){
+            retMessage.setErrorCode("0");
+            retMessage.setErrorMessage(getErrorMessage(0));
+            log.debug("umid:{} token check ok!",umid);
+        }else{
+            retMessage.setErrorCode("-40");
+            retMessage.setErrorMessage(getErrorMessage(-40));
+            log.error("umid:{} token check failed! token:{}",umid,token);
+        }
+        return retMessage;
     }
 }

@@ -27,7 +27,7 @@ public class UserController {
 
     //http://localhost:8080/user/adduserbymail?email=test@139email.com&pass=11111&verifyCode=1111&ip=192.168.0.1&platform=web
     @RequestMapping("/adduserbymail")
-    public RetMessage authing(
+    public RetMessage adduserbymail(
             @RequestParam(value="email", required = true) String email,
             @RequestParam(value="pass", required = true) String pass,
             @RequestParam(value="verifyCode", required = true) String verifyCode,
@@ -41,22 +41,18 @@ public class UserController {
         return userService.addUserByMail(email,pass,ip,verifyCode);
     }
 
-//    @RequestMapping("/authplain")
-//    public String authing2(
-//            @RequestParam(value="name", defaultValue="") String name,
-//            @RequestParam(value="pass", defaultValue="") String pass,
-//            @RequestParam(value="ip", defaultValue="") String ip,
-//            @RequestParam(value="platform", defaultValue="") String platform,
-//            HttpServletRequest httpServletRequest
-//    ) {
-//        int errorCode;
-//        String errorMessage;
-//        String requestIp = httpServletRequest.getRemoteAddr();
-//        logger.info("client [{}] auth param: umid={} ip={} platform={}",requestIp,name,ip,platform);
-//        errorCode = authService.getErrorCode(name,pass,ip,platform);
-//        errorMessage = authService.getErrorMessage(errorCode);
-//        logger.info("server [{}] auth response-plain:{} {}",requestIp,errorCode,errorMessage);
-//        return errorCode + " "+errorMessage;
-//    }
+    //http://localhost:8080/user/getuserinfo?umid=1
+    @RequestMapping("/getuserinfo")
+    public RetMessage getuserinfo(
+            @RequestParam(value="umid", required = true) int umid,
+            HttpServletRequest httpServletRequest
+    ) {
+        String requestIp = httpServletRequest.getRemoteAddr();
+        logger.info("client [{}] getuserinfo param: umid={}",requestIp,umid);
+        return userService.getUserInfo(umid);
+    }
+
+
+
 
 }

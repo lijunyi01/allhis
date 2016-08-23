@@ -90,4 +90,43 @@ public class UserService {
         return userParamBean;
     }
 
+    public RetMessage getUserInfo(int umid){
+        RetMessage retMessage = new RetMessage();
+        List<Map<String,Object>> mapList = mysqlEmailDao.getIprofileInfo(umid);
+        if(mapList.size()==1){
+            String siteip = null;
+            String siteport = null;
+            String dbindex = null;
+            String tableindex = null;
+            Map<String,Object> map = mapList.get(0);
+            if(map.get("siteip")!=null){
+                siteip = map.get("siteip").toString();
+            }
+            if(map.get("siteport")!=null){
+                siteport = map.get("siteport").toString();
+            }
+            if(map.get("dbindex")!=null){
+                dbindex = map.get("dbindex").toString();
+            }
+            if(map.get("tableindex")!=null){
+                tableindex = map.get("tableindex").toString();
+            }
+            if(siteip!=null && siteport!=null && dbindex!=null && tableindex!=null){
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+                retMessage.setRetContent("siteip="+siteip+"<{[CDATA]}>siteport="+siteport+"<{[CDATA]}>dbindex="+dbindex+"<{[CDATA]}>tableindex="+tableindex);
+            }else{
+                retMessage.setErrorCode("-2");
+                retMessage.setErrorMessage("get userinfo failed");
+                log.error("umid:{} get user info failed!",umid);
+            }
+
+        }else{
+            retMessage.setErrorCode("-1");
+            retMessage.setErrorMessage("umid:"+ umid +" not exists!");
+            log.error("umid:{} not exists!",umid);
+        }
+        return retMessage;
+    }
+
 }
