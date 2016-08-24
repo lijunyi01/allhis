@@ -3,11 +3,12 @@ package com.allhis.conf;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
-import com.allhis.App;
 import com.allhis.bean.RegBean;
 import com.allhis.listener.*;
 import com.corundumstudio.socketio.SocketIOServer;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -17,6 +18,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 //import com.corundumstudio.socketio.Configuration;
 
 /*
@@ -26,18 +30,25 @@ import java.io.File;
 @Configuration
 class ApplicationConfig {
 
+    private static Logger log = LoggerFactory.getLogger(ApplicationConfig.class);
+
+    @Value("${system.port}")
+    private int port;
+    @Value("${system.sslport}")
+    private int sslport;
+
     @Bean
     public static PropertyPlaceholderConfigurer propertyPlaceholderConfigurer() {
         PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
         //ClassPathResource 的根目录在本项目是指resources目录
         //ppc.setLocation(new ClassPathResource("/test.properties"));
-        ppc.setLocation(new FileSystemResource("/appconf/websocketapi/app.properties"));
+        ppc.setLocation(new FileSystemResource("/appconf/ah_websocketapi/app.properties"));
         return ppc;
     }
 
     @Bean
     public static JoranConfigurator readLogbackPropertyFile(){
-        File logbackFile = new File("/appconf/websocketapi/logback.xml");
+        File logbackFile = new File("/appconf/ah_websocketapi/logback.xml");
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         JoranConfigurator configurator = new JoranConfigurator();
         configurator.setContext(lc);
@@ -63,7 +74,7 @@ class ApplicationConfig {
     com.corundumstudio.socketio.Configuration configuration(){
         com.corundumstudio.socketio.Configuration configuration = new com.corundumstudio.socketio.Configuration();
 //        configuration.setHostname("192.168.8.100");
-        configuration.setPort(8090);
+        configuration.setPort(port);
         //configuration.setPingInterval(30000);
         //configuration.setPingTimeout(20000);
         //configuration.setTransports(Transport.WEBSOCKET);
@@ -71,10 +82,41 @@ class ApplicationConfig {
         return configuration;
     }
 
+    @Bean
+    com.corundumstudio.socketio.Configuration configurationSSL(){
+        com.corundumstudio.socketio.Configuration configuration = new com.corundumstudio.socketio.Configuration();
+//        configuration.setHostname("192.168.8.100");
+        configuration.setPort(sslport);
+        InputStream stream = null;
+        try {
+            stream = new FileInputStream("/appconf/ah_websocketapi/certificates/keystore.jks");
+        } catch (FileNotFoundException e) {
+            log.error("exception:{}",e.toString());
+        }
+        if(stream!=null) {
+            configuration.setKeyStore(stream);
+            configuration.setKeyStorePassword("123456");
+        }
+        return configuration;
+    }
+
     @Bean(initMethod = "start")
     @Lazy(false)
     SocketIOServer socketIOServer(){
         SocketIOServer socketIOServer = new SocketIOServer(configuration());
+        socketIOServer.addConnectListener(myConncetListener());
+        socketIOServer.addDisconnectListener(myDisconncetListener());
+        //对应于客户端的自定义事件“Regist”，形如：_sioClient.emit("Regist", JSON.stringify(RegObject));
+        socketIOServer.addEventListener("Regist",RegBean.class,myRegListener());
+        //对应于客户端的默认事件“message”，形如：_sioClient.send("hello");
+        socketIOServer.addEventListener("message",String.class,myMessageListener());
+        return socketIOServer;
+    }
+
+    @Bean(initMethod = "start")
+    @Lazy(false)
+    SocketIOServer socketIOServerSSL(){
+        SocketIOServer socketIOServer = new SocketIOServer(configurationSSL());
         socketIOServer.addConnectListener(myConncetListener());
         socketIOServer.addDisconnectListener(myDisconncetListener());
         //对应于客户端的自定义事件“Regist”，形如：_sioClient.emit("Regist", JSON.stringify(RegObject));
