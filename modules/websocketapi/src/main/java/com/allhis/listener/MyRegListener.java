@@ -6,8 +6,12 @@ import com.allhis.websocketapi.Application;
 import com.corundumstudio.socketio.AckRequest;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.listener.DataListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MyRegListener implements DataListener<RegBean> {
+
+    private static Logger log = LoggerFactory.getLogger(MyRegListener.class);
 
     @Override
     public void onData(SocketIOClient socketIOClient, RegBean data, AckRequest ackSender) throws Exception {
@@ -24,7 +28,7 @@ public class MyRegListener implements DataListener<RegBean> {
             //向用户与客户端存储中存入新的client
             Application.user_client_cache.put(socketIOClient.getSessionId(), umid);
             socketIOClient.sendEvent("regOK", data);
-//            System.out.println("注册成功！key=" + userid);
+            log.info("注册成功！key=" + umid);
         }
 
     }

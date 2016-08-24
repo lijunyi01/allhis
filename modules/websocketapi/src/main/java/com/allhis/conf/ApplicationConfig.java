@@ -1,18 +1,22 @@
 package com.allhis.conf;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 import com.allhis.App;
 import com.allhis.bean.RegBean;
-import com.allhis.listener.MyAuthorizationListener;
-import com.allhis.listener.MyConncetListener;
-import com.allhis.listener.MyDisconncetListener;
-import com.allhis.listener.MyRegListener;
+import com.allhis.listener.*;
 import com.corundumstudio.socketio.SocketIOServer;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+
+import java.io.File;
 //import com.corundumstudio.socketio.Configuration;
 
 /*
@@ -21,6 +25,33 @@ import org.springframework.core.io.ClassPathResource;
 */
 @Configuration
 class ApplicationConfig {
+
+    @Bean
+    public static PropertyPlaceholderConfigurer propertyPlaceholderConfigurer() {
+        PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
+        //ClassPathResource 的根目录在本项目是指resources目录
+        //ppc.setLocation(new ClassPathResource("/test.properties"));
+        ppc.setLocation(new FileSystemResource("/appconf/websocketapi/app.properties"));
+        return ppc;
+    }
+
+    @Bean
+    public static JoranConfigurator readLogbackPropertyFile(){
+        File logbackFile = new File("/appconf/websocketapi/logback.xml");
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(lc);
+        lc.reset();
+        try {
+            configurator.doConfigure(logbackFile);
+        }
+        catch (JoranException e) {
+            e.printStackTrace(System.err);
+            System.exit(-1);
+        }
+        return configurator;
+
+    }
 
     @Bean
     MyAuthorizationListener myAuthorizationListener(){
@@ -46,7 +77,10 @@ class ApplicationConfig {
         SocketIOServer socketIOServer = new SocketIOServer(configuration());
         socketIOServer.addConnectListener(myConncetListener());
         socketIOServer.addDisconnectListener(myDisconncetListener());
+        //对应于客户端的自定义事件“Regist”，形如：_sioClient.emit("Regist", JSON.stringify(RegObject));
         socketIOServer.addEventListener("Regist",RegBean.class,myRegListener());
+        //对应于客户端的默认事件“message”，形如：_sioClient.send("hello");
+        socketIOServer.addEventListener("message",String.class,myMessageListener());
         return socketIOServer;
     }
 
@@ -63,6 +97,11 @@ class ApplicationConfig {
     @Bean
     MyRegListener myRegListener(){
         return new MyRegListener();
+    }
+
+    @Bean
+    MyMessageListener myMessageListener(){
+        return new MyMessageListener();
     }
 
 }
