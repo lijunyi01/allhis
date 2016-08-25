@@ -25,7 +25,7 @@ public class UserController {
 
     private static Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    //http://localhost:8080/user/adduserbymail?email=test@139email.com&pass=11111&verifyCode=1111&ip=192.168.0.1&platform=web
+    //http://222.46.16.172:8081/user/adduserbymail?email=test@139email.com&pass=11111&verifyCode=1111&ip=192.168.0.1&platform=web
     @RequestMapping("/adduserbymail")
     public RetMessage adduserbymail(
             @RequestParam(value="email", required = true) String email,
@@ -41,7 +41,7 @@ public class UserController {
         return userService.addUserByMail(email,pass,ip,verifyCode);
     }
 
-    //http://localhost:8080/user/getuserinfo?umid=1
+    //http://222.46.16.172:8081/user/getuserinfo?umid=1
     @RequestMapping("/getuserinfo")
     public RetMessage getuserinfo(
             @RequestParam(value="umid", required = true) int umid,
