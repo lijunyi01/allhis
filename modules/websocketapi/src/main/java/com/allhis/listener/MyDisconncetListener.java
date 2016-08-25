@@ -3,8 +3,12 @@ package com.allhis.listener;
 import com.allhis.websocketapi.Application;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.listener.DisconnectListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MyDisconncetListener implements DisconnectListener {
+
+    private static Logger log = LoggerFactory.getLogger(MyDisconncetListener.class);
 
     @Override
     public void onDisconnect(SocketIOClient socketIOClient) {
@@ -20,5 +24,7 @@ public class MyDisconncetListener implements DisconnectListener {
             //清除关系缓存中的信息
             Application.user_client_cache.remove(socketIOClient.getSessionId());
         }
+
+        log.debug("clientip:{} disconnected. client socket is:{}",clientIp,socketIOClient.toString());
     }
 }
