@@ -1,5 +1,5 @@
 /*建库*/
-create database myhis default character set utf8;
+create database ah_myhisapp default character set utf8;
 
 DROP TABLE IF EXISTS myproject0;
 CREATE TABLE myproject0(

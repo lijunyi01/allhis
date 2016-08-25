@@ -44,7 +44,22 @@ public class MyhisService {
                 log.error("cteate project failed,umid:{} projectname:{} tableindex:{}",umid,projectname,tableindex);
             }
         }
+        return retMessage;
+    }
 
+    public RetMessage createItem(int umid,int projectid,String itemname,String itemcontent,String begintime,String endtime){
+        RetMessage retMessage = new RetMessage();
+        int tableindex = userInfoService.getTableIndex(umid);
+        if(tableindex < 0){
+            retMessage.setErrorCode("-100");
+            retMessage.setErrorMessage("failed to get tableindex");
+            log.error("get tableindex failed,umid:{}",umid);
+
+        }else{
+            //todo:创建item
+            //校验projectid是否存在
+
+        }
         return retMessage;
     }
 }
