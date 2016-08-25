@@ -1,5 +1,5 @@
 /*建库*/
-create database allhis default character set utf8;
+create database ah_timecenter default character set utf8;
 
 -- 用于多语言支持
 DROP TABLE IF EXISTS multilanguagenames;
@@ -76,7 +76,7 @@ insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,com
 insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,comment) values(100002,1,2,-1047,-771,'西周，起始时间有争论');
 insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,comment) values(100003,1,2,-770,-256,'东周，周赧王末年');
 insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,comment) values(100004,1,3,-770,-476,'春秋，与孔子所修订的《春秋》年代（公元前722年-公元前481年）大体相当；且－476年为周敬王末年');
-insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,comment) values('战国',1,3,-475,-221,'《史记》以周元王元年为始叙述六国时事');
+insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,comment) values(100005,1,3,-475,-221,'战国，《史记》以周元王元年为始叙述六国时事');
 insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,comment) values('秦',1,1,-221,-207,'-207为二世卒年；子婴降');
 insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,comment) values('西楚',1,1,-206,-202,'');
 insert into period(periodnameid, periodtype, periodlevel, beginyear, endyear,comment) values('汉',1,1,-202,220,'讫于曹丕废汉');
