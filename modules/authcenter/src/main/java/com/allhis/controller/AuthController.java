@@ -37,7 +37,7 @@ public class AuthController {
     ) {
 
         String requestIp = httpServletRequest.getRemoteAddr();
-        logger.info("client [{}] auth param: umid={} ip={} platform={}",requestIp,name,ip,platform);
+        logger.info("client [{}] auth param: name={} ip={} platform={}",requestIp,name,ip,platform);
         RetMessage retMessage = authService.auth(name,pass,ip,platform);
         return retMessage;
     }
