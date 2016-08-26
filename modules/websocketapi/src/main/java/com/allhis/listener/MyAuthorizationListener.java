@@ -16,11 +16,11 @@ public class MyAuthorizationListener implements AuthorizationListener {
     @Override
     public boolean isAuthorized(HandshakeData handshakeData) {
         boolean ret = true;
-        String a = handshakeData.getAddress().toString();
-        String b = handshakeData.getUrl();
-        //此处可以验证连接等
-        log.debug("in MyAuthorizationListener:{}",a);
-        log.debug("in MyAuthorizationListener:{}",b);
+//        String a = handshakeData.getAddress().toString();
+//        String b = handshakeData.getUrl();
+//        //此处可以验证连接等
+//        log.debug("in MyAuthorizationListener:{}",a);
+//        log.debug("in MyAuthorizationListener:{}",b);
         return ret;
     }
 }

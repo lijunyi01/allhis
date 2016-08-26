@@ -3,9 +3,10 @@ package com.allhis.conf;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
-import com.allhis.bean.RegBean;
+import com.allhis.bean.ClientReqBean;
 import com.allhis.listener.*;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.corundumstudio.socketio.Transport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,7 +78,7 @@ class ApplicationConfig {
         configuration.setPort(port);
         //configuration.setPingInterval(30000);
         //configuration.setPingTimeout(20000);
-        //configuration.setTransports(Transport.WEBSOCKET);
+//        configuration.setTransports(Transport.WEBSOCKET);
         configuration.setAuthorizationListener(myAuthorizationListener());
         return configuration;
     }
@@ -97,6 +98,8 @@ class ApplicationConfig {
             configuration.setKeyStore(stream);
             configuration.setKeyStorePassword("123456");
         }
+//        configuration.setTransports(Transport.WEBSOCKET);
+        configuration.setAuthorizationListener(myAuthorizationListener());
         return configuration;
     }
 
@@ -106,8 +109,8 @@ class ApplicationConfig {
         SocketIOServer socketIOServer = new SocketIOServer(configuration());
         socketIOServer.addConnectListener(myConncetListener());
         socketIOServer.addDisconnectListener(myDisconncetListener());
-        //对应于客户端的自定义事件“Regist”，形如：_sioClient.emit("Regist", JSON.stringify(RegObject));
-        socketIOServer.addEventListener("Regist",RegBean.class,myRegListener());
+        //对应于客户端的自定义事件“Regist”，形如：_sioClient.emit("Reguest", JSON.stringify(RegObject));
+        socketIOServer.addEventListener("Request", ClientReqBean.class,myRequestListener());
         //对应于客户端的默认事件“message”，形如：_sioClient.send("hello");
         socketIOServer.addEventListener("message",String.class,myMessageListener());
         return socketIOServer;
@@ -119,8 +122,8 @@ class ApplicationConfig {
         SocketIOServer socketIOServer = new SocketIOServer(configurationSSL());
         socketIOServer.addConnectListener(myConncetListener());
         socketIOServer.addDisconnectListener(myDisconncetListener());
-        //对应于客户端的自定义事件“Regist”，形如：_sioClient.emit("Regist", JSON.stringify(RegObject));
-        socketIOServer.addEventListener("Regist",RegBean.class,myRegListener());
+        //对应于客户端的自定义事件“Regist”，形如：_sioClient.emit("Request", JSON.stringify(RegObject));
+        socketIOServer.addEventListener("Request", ClientReqBean.class, myRequestListener());
         //对应于客户端的默认事件“message”，形如：_sioClient.send("hello");
         socketIOServer.addEventListener("message",String.class,myMessageListener());
         return socketIOServer;
@@ -137,8 +140,8 @@ class ApplicationConfig {
     }
 
     @Bean
-    MyRegListener myRegListener(){
-        return new MyRegListener();
+    MyRequestListener myRequestListener(){
+        return new MyRequestListener();
     }
 
     @Bean
