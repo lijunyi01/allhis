@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import javax.servlet.annotation.WebFilter;
@@ -61,6 +63,15 @@ class ApplicationConfig {
         characterEncodingFilter.setEncoding("UTF-8");
         characterEncodingFilter.setForceEncoding(true);
         return characterEncodingFilter;
+    }
+
+    @Bean
+    RestTemplate restTemplate(){
+        HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+        httpComponentsClientHttpRequestFactory.setReadTimeout(10*1000);
+        httpComponentsClientHttpRequestFactory.setConnectTimeout(5*1000);
+        RestTemplate restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
+        return restTemplate;
     }
 	
 }
