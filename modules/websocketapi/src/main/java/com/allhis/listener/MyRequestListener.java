@@ -13,8 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.nio.file.attribute.UserDefinedFileAttributeView;
-
 public class MyRequestListener implements DataListener<ClientReqBean> {
 
     private static Logger log = LoggerFactory.getLogger(MyRequestListener.class);
@@ -33,29 +31,28 @@ public class MyRequestListener implements DataListener<ClientReqBean> {
             String token = data.getToken();
             String serial = data.getSerial();
             String functionName = data.getFunctionName();
+            ServerAckBean serverAckBean = new ServerAckBean();
             if (umid > 0 && token != null && serial != null && functionName !=null) {
                 //验证token
                 if (userService.authToken(umid, token, socketIOClient)) {
                     String appAddress = userService.getAppAddress(umid);
                     if(appAddress != null){
-                        ServerAckBean serverAckBean = myhisService.doRequest(umid,functionName,data.getGeneralParam(),appAddress);
-                        serverAckBean.setSerial(serial);
-                        socketIOClient.sendEvent("AckReq", serverAckBean);
+                        serverAckBean = myhisService.doRequest(umid,functionName,data.getGeneralParam(),appAddress);
                     }else{
                         log.error("get appaddress error! umid:{}",umid);
                     }
 
                 } else {
-                    ServerAckBean serverAckBean = new ServerAckBean();
                     serverAckBean.setErrorCode("-2");
                     serverAckBean.setErrorMessage("auth fail");
                     serverAckBean.setSerial(serial);
-                    socketIOClient.sendEvent("AckReq", serverAckBean);
                 }
 
             } else {
                 log.error("param error in MyRequestListener! umid:{} token:{} serial:{}", umid, token, serial);
             }
+            serverAckBean.setSerial(serial);
+            socketIOClient.sendEvent("AckReq", serverAckBean);
         }else{
             log.error("data null!");
         }

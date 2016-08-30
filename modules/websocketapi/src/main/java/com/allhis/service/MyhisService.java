@@ -20,10 +20,12 @@ import java.util.List;
 public class MyhisService {
     private static Logger log = LoggerFactory.getLogger(MyhisService.class);
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public ServerAckBean doRequest(int umid,String functionName,String generalParam,String appAddress){
         ServerAckBean serverAckBean = new ServerAckBean();
         RetMessage retMessage;
-        RestTemplate restTemplate = new RestTemplate();
         String url = "http://"+ appAddress + "/appinterface/gen?umid="+umid+"&functionName="+functionName+"&generalParam="+generalParam;
         log.debug("doRequest:"+ url);
         retMessage = restTemplate.getForObject(url, RetMessage.class);

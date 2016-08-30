@@ -17,6 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -149,4 +152,12 @@ class ApplicationConfig {
         return new MyMessageListener();
     }
 
+    @Bean
+    RestTemplate restTemplate(){
+        HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+        httpComponentsClientHttpRequestFactory.setReadTimeout(10*1000);
+        httpComponentsClientHttpRequestFactory.setConnectTimeout(5*1000);
+        RestTemplate restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
+        return restTemplate;
+    }
 }

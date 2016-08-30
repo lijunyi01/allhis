@@ -6,6 +6,7 @@ import com.allhis.websocketapi.Application;
 import com.corundumstudio.socketio.SocketIOClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -28,6 +29,9 @@ public class UserService {
     private String getuserinfourl;
     @Value("#{'${myhisapp.param}'.split('\\<\\[CDATA\\]\\>')}")
     private List<String> paramStrList;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     public boolean authToken(int umid,String token,SocketIOClient socketIOClient){
         boolean ret = false;
@@ -60,7 +64,6 @@ public class UserService {
     private boolean tokenCheck(int umid,String token){
         boolean ret = false;
         RetMessage retMessage;
-        RestTemplate restTemplate = new RestTemplate();
         String authurl = authtokenurl + "umid="+umid+"&token="+token;
         retMessage = restTemplate.getForObject(authurl, RetMessage.class);
         if(retMessage.getErrorCode().equals("0")){
@@ -74,7 +77,6 @@ public class UserService {
     private int getDbIndex(int umid){
         int ret = -1;
         RetMessage retMessage;
-        RestTemplate restTemplate = new RestTemplate();
         String url = getuserinfourl + "umid=" + umid;
         retMessage = restTemplate.getForObject(url, RetMessage.class);
         if(retMessage.getErrorCode().equals("0")) {
