@@ -12,6 +12,7 @@ public class ServerAckBean {
     private String generalAckContent;
 
     public ServerAckBean() {
+        this.errorCode = "-1";
     }
 
     public String getSerial() {

@@ -3,6 +3,7 @@ package com.allhis.listener;
 
 import com.allhis.bean.ClientReqBean;
 import com.allhis.bean.ServerAckBean;
+import com.allhis.service.MyhisService;
 import com.allhis.service.UserService;
 import com.allhis.websocketapi.Application;
 import com.corundumstudio.socketio.AckRequest;
@@ -20,6 +21,8 @@ public class MyRequestListener implements DataListener<ClientReqBean> {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private MyhisService myhisService;
 
     @Override
     public void onData(SocketIOClient socketIOClient, ClientReqBean data, AckRequest ackSender) throws Exception {
@@ -29,14 +32,22 @@ public class MyRequestListener implements DataListener<ClientReqBean> {
             int umid = data.getUmid();
             String token = data.getToken();
             String serial = data.getSerial();
-            if (umid > 0 && token != null && serial != null) {
+            String functionName = data.getFunctionName();
+            if (umid > 0 && token != null && serial != null && functionName !=null) {
                 //验证token
                 if (userService.authToken(umid, token, socketIOClient)) {
-
+                    String appAddress = userService.getAppAddress(umid);
+                    if(appAddress != null){
+                        ServerAckBean serverAckBean = myhisService.doRequest(umid,functionName,data.getGeneralParam(),appAddress);
+                        serverAckBean.setSerial(serial);
+                        socketIOClient.sendEvent("AckReq", serverAckBean);
+                    }else{
+                        log.error("get appaddress error! umid:{}",umid);
+                    }
 
                 } else {
                     ServerAckBean serverAckBean = new ServerAckBean();
-                    serverAckBean.setErrorCode("-1");
+                    serverAckBean.setErrorCode("-2");
                     serverAckBean.setErrorMessage("auth fail");
                     serverAckBean.setSerial(serial);
                     socketIOClient.sendEvent("AckReq", serverAckBean);

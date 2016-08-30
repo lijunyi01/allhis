@@ -19,6 +19,8 @@ public class Application {
     public static HashMap<Integer, SocketIOClient> client_cache = new HashMap<Integer, SocketIOClient>();
     //用户客户端关系暂存
     public static HashMap<UUID,Integer> user_client_cache = new HashMap<UUID,Integer>();
+    //用户对应的app server 的address的暂存
+    public static HashMap<Integer,String> user_address = new HashMap<Integer,String>();
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

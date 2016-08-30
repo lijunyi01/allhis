@@ -1,6 +1,7 @@
 package com.allhis.service;
 
 import com.allhis.bean.RetMessage;
+import com.allhis.toolkit.GlobalTools;
 import com.allhis.websocketapi.Application;
 import com.corundumstudio.socketio.SocketIOClient;
 import org.slf4j.Logger;
@@ -8,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ljy on 16/8/30.
@@ -18,8 +22,12 @@ public class UserService {
 
     private static Logger log = LoggerFactory.getLogger(UserService.class);
 
-    @Value("${system.authcenterurl}")
-    private String authcenterurl;
+    @Value("${authcenter.authtokenurl}")
+    private String authtokenurl;
+    @Value("${authcenter.getuserinfourl}")
+    private String getuserinfourl;
+    @Value("#{'${myhisapp.param}'.split('\\<\\[CDATA\\]\\>')}")
+    private List<String> paramStrList;
 
     public boolean authToken(int umid,String token,SocketIOClient socketIOClient){
         boolean ret = false;
@@ -53,12 +61,60 @@ public class UserService {
         boolean ret = false;
         RetMessage retMessage;
         RestTemplate restTemplate = new RestTemplate();
-        String authurl = authcenterurl + "umid="+umid+"&token="+token;
+        String authurl = authtokenurl + "umid="+umid+"&token="+token;
         retMessage = restTemplate.getForObject(authurl, RetMessage.class);
         if(retMessage.getErrorCode().equals("0")){
             ret = true;
         }else{
             log.info("umid:{} token check failed! token:{}",umid,token);
+        }
+        return ret;
+    }
+
+    private int getDbIndex(int umid){
+        int ret = -1;
+        RetMessage retMessage;
+        RestTemplate restTemplate = new RestTemplate();
+        String url = getuserinfourl + "umid=" + umid;
+        retMessage = restTemplate.getForObject(url, RetMessage.class);
+        if(retMessage.getErrorCode().equals("0")) {
+            String retContent = retMessage.getRetContent();
+            Map<String,String> map = GlobalTools.parseInput(retContent);
+            if(map.get("dbindex")!=null){
+                ret = GlobalTools.convertStringToInt(map.get("dbindex").toString());
+            }
+        }
+        if(ret<1){
+            log.error("get dbindex failed! umid:{}",umid);
+        }
+        return ret;
+    }
+
+    public String getAppAddress(int umid){
+        String ret = null;
+        if(Application.user_address.containsKey(umid)){
+            ret = Application.user_address.get(umid);
+        }else {
+            int dbindex = getDbIndex(umid);
+            if (dbindex > -1) {
+                int dbindexInProfile = -1;
+                for (String str : paramStrList) {
+                    Map<String, String> map = GlobalTools.parseInput(str, "\\<\\[CDATA1\\]\\>");
+                    if (map.get("dbindex") != null) {
+                        dbindexInProfile = GlobalTools.convertStringToInt(map.get("dbindex").toString());
+                        if (dbindex == dbindexInProfile) {
+                            if (map.get("address") != null) {
+                                ret = map.get("address").toString();
+                                Application.user_address.put(umid,ret);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if(ret == null){
+                log.error("get app address failed! umid:{} dbindex:{}",umid,dbindex);
+            }
         }
         return ret;
     }
