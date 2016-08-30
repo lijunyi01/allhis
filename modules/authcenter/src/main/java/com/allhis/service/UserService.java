@@ -114,7 +114,7 @@ public class UserService {
             if(siteip!=null && siteport!=null && dbindex!=null && tableindex!=null){
                 retMessage.setErrorCode("0");
                 retMessage.setErrorMessage("success");
-                retMessage.setRetContent("siteip="+siteip+"<{[CDATA]}>siteport="+siteport+"<{[CDATA]}>dbindex="+dbindex+"<{[CDATA]}>tableindex="+tableindex);
+                retMessage.setRetContent("siteip="+siteip+"<[CDATA]>siteport="+siteport+"<[CDATA]>dbindex="+dbindex+"<[CDATA]>tableindex="+tableindex);
             }else{
                 retMessage.setErrorCode("-2");
                 retMessage.setErrorMessage("get userinfo failed");
