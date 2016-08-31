@@ -4,6 +4,9 @@ import com.allhis.bean.RetMessage;
 import com.allhis.toolkit.GlobalTools;
 import com.allhis.websocketapi.Application;
 import com.corundumstudio.socketio.SocketIOClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +37,8 @@ public class UserService {
 
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private ObjectMapper mapper;
 
     public boolean authToken(int umid,String token,SocketIOClient socketIOClient){
         boolean ret = false;
@@ -81,7 +88,7 @@ public class UserService {
         retMessage = restTemplate.getForObject(url, RetMessage.class);
         if(retMessage.getErrorCode().equals("0")) {
             String retContent = retMessage.getRetContent();
-            Map<String,String> map = GlobalTools.parseInput(retContent);
+            Map<String,String> map = jsonString2Map(retContent);
             if(map.get("dbindex")!=null){
                 ret = GlobalTools.convertStringToInt(map.get("dbindex").toString());
             }
@@ -117,6 +124,49 @@ public class UserService {
             if(ret == null){
                 log.error("get app address failed! umid:{} dbindex:{}",umid,dbindex);
             }
+        }
+        return ret;
+    }
+
+    private Map<String,String> jsonString2Map(String jsonString){
+        Map<String,String> jsonmap = null;
+        if(jsonString!=null && jsonString.trim().length()>0) {
+            try {
+                jsonmap = mapper.readValue(jsonString, new TypeReference<HashMap<String, String>>() {
+                });
+            } catch (IOException e) {
+                log.error("exception catched in json string converting to map! {}", e.toString());
+            }
+        }else{
+            log.error("invalid jsonstring! jsonstring:{}",jsonString);
+        }
+        return jsonmap;
+    }
+
+    private String map2JsonString(Map<String,String> map){
+        String ret = null;
+        if(map!=null){
+            try {
+                ret = mapper.writeValueAsString(map);
+            } catch (JsonProcessingException e) {
+                log.error("exception catched in map converting to json string! {}",e.toString());
+            }
+        }else{
+            log.error("invalid jsonmap!");
+        }
+        return ret;
+    }
+
+    private String maplist2JsonString(List<Map<String,Object>> mapList){
+        String ret = null;
+        if(mapList!=null){
+            try {
+                ret = mapper.writeValueAsString(mapList);
+            } catch (JsonProcessingException e) {
+                log.error("exception catched in maplist converting to json string! {}",e.toString());
+            }
+        }else{
+            log.error("invalid maplist!");
         }
         return ret;
     }

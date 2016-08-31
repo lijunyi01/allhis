@@ -7,6 +7,7 @@ import com.allhis.bean.ClientReqBean;
 import com.allhis.listener.*;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.Transport;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -159,5 +160,10 @@ class ApplicationConfig {
         httpComponentsClientHttpRequestFactory.setConnectTimeout(5*1000);
         RestTemplate restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
         return restTemplate;
+    }
+
+    @Bean
+    ObjectMapper objectMapper(){
+        return new ObjectMapper();
     }
 }
