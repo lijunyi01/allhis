@@ -5,6 +5,8 @@ import com.allhis.bean.UserParamBean;
 import com.allhis.dao.MysqlEmailDao;
 import com.allhis.dao.MysqlLogDao;
 import com.allhis.toolkit.GlobalTools;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.mina.util.CopyOnWriteMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +35,8 @@ public class UserService {
     private MysqlLogDao mysqlLogDao;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ObjectMapper mapper;
 
     public RetMessage addUserByMail(String email,String pass,String userIp,String verifyCode){
         RetMessage retMessage = new RetMessage();
@@ -114,7 +119,12 @@ public class UserService {
             if(siteip!=null && siteport!=null && dbindex!=null && tableindex!=null){
                 retMessage.setErrorCode("0");
                 retMessage.setErrorMessage("success");
-                retMessage.setRetContent("siteip="+siteip+"<[CDATA]>siteport="+siteport+"<[CDATA]>dbindex="+dbindex+"<[CDATA]>tableindex="+tableindex);
+                Map<String,String> contentmap = new HashMap<>();
+                contentmap.put("siteip",siteip);
+                contentmap.put("siteport",siteport);
+                contentmap.put("dbindex",dbindex);
+                contentmap.put("tableindex",tableindex);
+                retMessage.setRetContent(map2JsonString(contentmap));
             }else{
                 retMessage.setErrorCode("-2");
                 retMessage.setErrorMessage("get userinfo failed");
@@ -127,6 +137,20 @@ public class UserService {
             log.error("umid:{} not exists!",umid);
         }
         return retMessage;
+    }
+
+    private String map2JsonString(Map<String,String> map){
+        String ret = null;
+        if(map!=null){
+            try {
+                ret = mapper.writeValueAsString(map);
+            } catch (JsonProcessingException e) {
+                log.error("exception catched in map converting to json string! {}",e.toString());
+            }
+        }else{
+            log.error("invalid jsonmap!");
+        }
+        return ret;
     }
 
 }
