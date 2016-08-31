@@ -75,7 +75,7 @@ public class MysqlDao {
 
     public List<Map<String,Object>> getAllProjects(int umid,int tableindex,String sortFlag){
         List<Map<String,Object>> mapList;
-        if(sortFlag.equals("lasttime")){
+        if(sortFlag!=null && sortFlag.equals("lasttime")){
             mapList = jdbcTemplate.queryForList("select * from myproject" + tableindex + " where umid=? order by lasttime desc", umid);
         }else {
             mapList = jdbcTemplate.queryForList("select * from myproject" + tableindex + " where umid=? order by id desc", umid);

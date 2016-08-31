@@ -49,7 +49,7 @@ public class appController {
             HttpServletRequest httpServletRequest
     ) {
         String requestIp = httpServletRequest.getRemoteAddr();
-        logger.debug("client [{}] createproject param: functionname={} umid={} generalParam={}", requestIp, functionName,umid,generalParam);
+        logger.debug("client [{}] gen param: functionname={} umid={} generalParam={}", requestIp, functionName,umid,generalParam);
 
         RetMessage retMessage = myhisService.generalService(umid,functionName,generalParam);
         return retMessage;
