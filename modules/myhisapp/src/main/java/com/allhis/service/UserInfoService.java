@@ -5,6 +5,7 @@ import com.allhis.toolkit.GlobalTools;
 import org.apache.mina.util.CopyOnWriteMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -24,6 +25,8 @@ public class UserInfoService {
 
     @Value("${system.gettableindexurl}")
     private String url;
+    @Autowired
+    private RestTemplate restTemplate;
 
     public int getTableIndex(int umid){
         int ret = -1;
@@ -44,7 +47,6 @@ public class UserInfoService {
     private int getTableIndexFromApi(int umid){
         int ret = -1;
         //调authcenter的接口查用户的tableindex
-        RestTemplate restTemplate = new RestTemplate();
         AuthResp authResp = restTemplate.getForObject(url+umid, AuthResp.class);
         if(authResp.getAuthCode()==0){   //查询成功
             String content = authResp.getContent();

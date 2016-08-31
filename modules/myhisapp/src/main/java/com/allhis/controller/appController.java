@@ -26,16 +26,32 @@ public class appController {
 
     //新增项目接口
     //http://localhost:8080/appinterface/createproject?projectname=恐龙的历程&umid=666
-    @RequestMapping("/createproject")
-    public RetMessage api1(
-            @RequestParam(value="projectname",required = true) String projectname,
+//    @RequestMapping("/createproject")
+//    public RetMessage api1(
+//            @RequestParam(value="projectname",required = true) String projectname,
+//            @RequestParam(value="umid",required = true) int umid,
+//            HttpServletRequest httpServletRequest
+//    ) {
+//        String requestIp = httpServletRequest.getRemoteAddr();
+//        logger.info("client [{}] createproject param: projectname={} umid={}",requestIp,projectname,umid);
+//
+//        RetMessage retMessage = myhisService.createProject(projectname,umid);
+//        return retMessage;
+//    }
+
+    //通用接口
+    //http://localhost:8080/appinterface/gen?umid=1&functionName=getProject&generalParam=***;
+    @RequestMapping("/gen")
+    public RetMessage genapi(
             @RequestParam(value="umid",required = true) int umid,
+            @RequestParam(value="functionName",required = true) String functionName,
+            @RequestParam(value="generalParam",required = true) String generalParam,
             HttpServletRequest httpServletRequest
     ) {
         String requestIp = httpServletRequest.getRemoteAddr();
-        logger.info("client [{}] createproject param: projectname={} umid={}",requestIp,projectname,umid);
+        logger.debug("client [{}] createproject param: functionname={} umid={} generalParam={}", requestIp, functionName,umid,generalParam);
 
-        RetMessage retMessage = myhisService.createProject(projectname,umid);
+        RetMessage retMessage = myhisService.generalService(umid,functionName,generalParam);
         return retMessage;
     }
 }

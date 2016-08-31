@@ -13,7 +13,8 @@ CREATE TABLE myproject0(
     -- 最后修改时间
     lasttime DATETIME,
     PRIMARY KEY (id),
-    UNIQUE KEY (umid,name)
+    UNIQUE KEY (umid,projectname),
+    KEY (lasttime)
 )ENGINE = MYISAM;
 
 DROP TABLE IF EXISTS projectitem0;

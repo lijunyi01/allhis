@@ -4,6 +4,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 //import com.allhis.filter.SSLContextGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.mina.filter.ssl.SslFilter;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -60,13 +63,13 @@ public class ApplicationConfig {
         PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
         //ClassPathResource 的根目录在本项目是指resources目录
         //ppc.setLocation(new ClassPathResource("/test.properties"));
-        ppc.setLocation(new FileSystemResource("/appconf/myhisapp/app.properties"));
+        ppc.setLocation(new FileSystemResource("/appconf/ah_myhisapp/app.properties"));
         return ppc;
     }
 
     @Bean
     public static JoranConfigurator readLogbackPropertyFile(){
-        File logbackFile = new File("/appconf/myhisapp/logback.xml");
+        File logbackFile = new File("/appconf/ah_myhisapp/logback.xml");
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         JoranConfigurator configurator = new JoranConfigurator();
         configurator.setContext(lc);
@@ -129,5 +132,19 @@ public class ApplicationConfig {
 //        SslFilter sslFilter = new SslFilter(new SSLContextGenerator().getSslContext());
 //        return sslFilter;
 //    }
+
+    @Bean
+    RestTemplate restTemplate(){
+        HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+        httpComponentsClientHttpRequestFactory.setReadTimeout(10*1000);
+        httpComponentsClientHttpRequestFactory.setConnectTimeout(5*1000);
+        RestTemplate restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
+        return restTemplate;
+    }
+
+    @Bean
+    ObjectMapper objectMapper(){
+        return new ObjectMapper();
+    }
 
 }
