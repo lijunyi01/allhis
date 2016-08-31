@@ -1,7 +1,9 @@
 package com.allhis.service;
 
-import com.allhis.bean.AuthResp;
+import com.allhis.bean.RetMessage;
 import com.allhis.toolkit.GlobalTools;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.mina.util.CopyOnWriteMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -27,6 +31,8 @@ public class UserInfoService {
     private String url;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private ObjectMapper mapper;
 
     public int getTableIndex(int umid){
         int ret = -1;
@@ -35,7 +41,7 @@ public class UserInfoService {
         }else{
             //调authcenter的接口查用户的tableindex,查成功后同时写入tableindexMap
             int tableindex = getTableIndexFromApi(umid);
-            if(tableindex >0 ){
+            if(tableindex > -1 ){
                 ret = tableindex;
                 tableindexMap.put(umid,tableindex);
             }
@@ -47,28 +53,43 @@ public class UserInfoService {
     private int getTableIndexFromApi(int umid){
         int ret = -1;
         //调authcenter的接口查用户的tableindex
-        AuthResp authResp = restTemplate.getForObject(url+umid, AuthResp.class);
-        if(authResp.getAuthCode()==0){   //查询成功
-            String content = authResp.getContent();
+        RetMessage retMessage = restTemplate.getForObject(url+"umid="+umid, RetMessage.class);
+        if(retMessage.getErrorCode().equals("0")){   //查询成功
+            String content = retMessage.getRetContent();
             if(content!=null && content.trim().length()>0) {
-                Map<String, String> map = GlobalTools.parseInput(content, "=");
+                Map<String, String> map = jsonString2Map(content);
                 if(map.get("tableindex")!=null){
                     int tableindex = GlobalTools.convertStringToInt(map.get("tableindex").toString());
-                    if(tableindex>0){
+                    if(tableindex>-1){
                         ret = tableindex;
                     }else{
                         log.error("tableindex is not valid,tableindex:{}",map.get("tableindex").toString());
                     }
                 }else {
-                    log.error("authResp.getContent error! content:{}",content);
+                    log.error("getContent error! content:{}",content);
                 }
             }else{
                 log.error("content is empty!");
             }
         }else{
-            log.error("failed to get tableindex from api! umid:{} errorcode:{} errormsg:{}",umid,authResp.getAuthCode(),authResp.getAuthMessage());
+            log.error("failed to get tableindex from api! umid:{} errorcode:{} errormsg:{}",umid,retMessage.getErrorCode(),retMessage.getErrorMessage());
         }
         return ret;
+    }
+
+    private Map<String,String> jsonString2Map(String jsonString){
+        Map<String,String> jsonmap = null;
+        if(jsonString!=null && jsonString.trim().length()>0) {
+            try {
+                jsonmap = mapper.readValue(jsonString, new TypeReference<HashMap<String, String>>() {
+                });
+            } catch (IOException e) {
+                log.error("exception catched in json string converting to map! {}", e.toString());
+            }
+        }else{
+            log.error("invalid jsonstring! jsonstring:{}",jsonString);
+        }
+        return jsonmap;
     }
 }
 

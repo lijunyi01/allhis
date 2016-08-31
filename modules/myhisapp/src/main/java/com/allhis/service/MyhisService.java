@@ -143,6 +143,8 @@ public class MyhisService {
                 ret = true;
             }
         }
+        //todo：测试用
+        ret = true;
         return ret;
     }
 
