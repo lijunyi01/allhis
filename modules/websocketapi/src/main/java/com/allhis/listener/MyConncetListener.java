@@ -25,9 +25,9 @@ public class MyConncetListener implements ConnectListener {
     @Override
     public void onConnect(SocketIOClient socketIOClient) {
 
-        String clientIp = null;
+        String clientAddress = null;
         if(socketIOClient.getRemoteAddress()!=null) {
-            clientIp = socketIOClient.getRemoteAddress().toString();
+            clientAddress = socketIOClient.getRemoteAddress().toString();
         }
 
         HandshakeData handshakeData = socketIOClient.getHandshakeData();
@@ -35,9 +35,9 @@ public class MyConncetListener implements ConnectListener {
         int umid = GlobalTools.convertStringToInt(umidS);
         if(umid>0 && socketIOClient !=null) {
             userService.recordUmidAndSocket(umid, socketIOClient);
-            log.debug("umid:{} connected from:{}", umid, clientIp);
+            log.debug("umid:{} connected from:{}", umid, clientAddress);
         }else{
-            log.error("get param in onConnect error! clientip:{} umid:{}",clientIp,umid);
+            log.error("get param in onConnect error! clientaddress:{} umid:{}",clientAddress,umid);
         }
     }
 }

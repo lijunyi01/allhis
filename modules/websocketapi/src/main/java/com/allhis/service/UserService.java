@@ -115,8 +115,8 @@ public class UserService {
                 ret = GlobalTools.convertStringToInt(map.get("dbindex").toString());
             }
         }
-        if(ret<1){
-            log.error("get dbindex failed! umid:{}",umid);
+        if(ret<0){
+            log.error("get dbindex failed! umid:{} dbindex:{}",umid,ret);
         }
         return ret;
     }
