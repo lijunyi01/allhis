@@ -26,32 +26,39 @@ public class MyRequestListener implements DataListener<ClientReqBean> {
     public void onData(SocketIOClient socketIOClient, ClientReqBean data, AckRequest ackSender) throws Exception {
 
         if(data != null) {
-            //userid即为前台传到后台的regId
+
             int umid = data.getUmid();
-            String token = data.getToken();
             String serial = data.getSerial();
             String functionName = data.getFunctionName();
-            ServerAckBean serverAckBean = new ServerAckBean();
-            if (umid > 0 && token != null && serial != null && functionName !=null) {
-                //验证token
-                if (userService.authToken(umid, token, socketIOClient)) {
-                    String appAddress = userService.getAppAddress(umid);
-                    if(appAddress != null){
-                        serverAckBean = myhisService.doRequest(umid,functionName,data.getGeneralParam(),appAddress);
-                    }else{
-                        log.error("get appaddress error! umid:{}",umid);
-                    }
 
-                } else {
-                    serverAckBean.setErrorCode("-2");
-                    serverAckBean.setErrorMessage("auth fail");
+            int umidInCache = -1;
+            if(Application.sessionid_key_cache.containsKey(socketIOClient.getSessionId())){
+                umidInCache = Application.sessionid_key_cache.get(socketIOClient.getSessionId());
+            }
+
+            ServerAckBean serverAckBean = new ServerAckBean();
+            if(umid>0 && umid==umidInCache) {
+
+                if (serial != null && functionName != null) {
+                    String appAddress = userService.getAppAddress(umid);
+                    if (appAddress != null) {
+                        serverAckBean = myhisService.doRequest(umid, functionName, data.getGeneralParam(), appAddress);
+                    } else {
+                        log.error("get appaddress error! umid:{}", umid);
+                    }
                     serverAckBean.setSerial(serial);
+                } else {
+                    log.error("param error in MyRequestListener! umid:{} serial:{} functionName:{}", umid, serial, functionName);
                 }
 
-            } else {
-                log.error("param error in MyRequestListener! umid:{} token:{} serial:{}", umid, token, serial);
+            }else{
+                log.error("umid check failed! need auth again!");
+                serverAckBean.setErrorCode("-100");
+                serverAckBean.setErrorMessage("umid check failed! need auth again!");
+                if(serial!=null) {
+                    serverAckBean.setSerial(serial);
+                }
             }
-            serverAckBean.setSerial(serial);
             socketIOClient.sendEvent("AckReq", serverAckBean);
         }else{
             log.error("data null!");

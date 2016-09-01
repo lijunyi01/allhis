@@ -6,7 +6,8 @@ package com.allhis.bean;
  */
 public class ClientReqBean {
     private int umid;
-    private String token;
+    //不要了，连接时带umid和token，连接时验证，请求包里不需要token了
+//    private String token;
     private String serial;
     private String functionName;
     private String generalParam;
@@ -22,13 +23,13 @@ public class ClientReqBean {
         this.umid = umid;
     }
 
-    public String getToken() {
-        return token;
-    }
+//    public String getToken() {
+//        return token;
+//    }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+//    public void setToken(String token) {
+//        this.token = token;
+//    }
 
     public String getSerial() {
         return serial;

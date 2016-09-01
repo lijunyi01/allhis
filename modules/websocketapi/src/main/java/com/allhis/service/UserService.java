@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,39 +41,60 @@ public class UserService {
     @Autowired
     private ObjectMapper mapper;
 
-    public boolean authToken(int umid,String token,SocketIOClient socketIOClient){
-        boolean ret = false;
+    public void recordUmidAndSocket(int umid,SocketIOClient socketIOClient){
 
-        int umidInCache = -1;
-        if(Application.user_client_cache.containsKey(socketIOClient.getSessionId())){
-            umidInCache = Application.user_client_cache.get(socketIOClient.getSessionId());
-        }
-        SocketIOClient socketIOClientInCache = null;
-        if(Application.client_cache.containsKey(umid)){
-            socketIOClientInCache = Application.client_cache.get(umid);
-        }
+        //<sessionId,umid>
+        Application.sessionid_key_cache.put(socketIOClient.getSessionId(), umid);
 
-        if(socketIOClient == socketIOClientInCache && umid == umidInCache){   //已经校验过且保存在cache
-            ret = true;
-        }else{
-            if(tokenCheck(umid,token)){
-                //增加新的客户端
-                Application.client_cache.put(umid, socketIOClient);
-                //向用户与客户端存储中存入新的client
-                Application.user_client_cache.put(socketIOClient.getSessionId(), umid);
-                ret = true;
+        List<SocketIOClient> socketIOClientList;
+        //<umid,List<socket>>
+        if(Application.umid_key_cache.containsKey(umid)){
+            socketIOClientList = Application.umid_key_cache.get(umid);
+            if(!socketIOClientList.contains(socketIOClient)){
+                socketIOClientList.add(socketIOClient);
+                Application.umid_key_cache.put(umid, socketIOClientList);
             }
+        }else{
+            socketIOClientList = new ArrayList<>();
+            socketIOClientList.add(socketIOClient);
+            Application.umid_key_cache.put(umid, socketIOClientList);
         }
 
-        return ret;
     }
 
+//    public boolean authToken(int umid,String token,SocketIOClient socketIOClient){
+//        boolean ret = false;
+//
+//        int umidInCache = -1;
+//        if(Application.user_client_cache.containsKey(socketIOClient.getSessionId())){
+//            umidInCache = Application.user_client_cache.get(socketIOClient.getSessionId());
+//        }
+//        SocketIOClient socketIOClientInCache = null;
+//        if(Application.client_cache.containsKey(umid)){
+//            socketIOClientInCache = Application.client_cache.get(umid);
+//        }
+//
+//        if(socketIOClient == socketIOClientInCache && umid == umidInCache){   //已经校验过且保存在cache
+//            ret = true;
+//        }else{
+//            if(tokenCheck(umid,token)){
+//                //增加新的客户端
+//                Application.client_cache.put(umid, socketIOClient);
+//                //向用户与客户端存储中存入新的client
+//                Application.user_client_cache.put(socketIOClient.getSessionId(), umid);
+//                ret = true;
+//            }
+//        }
+//
+//        return ret;
+//    }
+
     //向authcenter进行token校验
-    private boolean tokenCheck(int umid,String token){
+    public boolean tokenCheck(int umid,String token){
         boolean ret = false;
         RetMessage retMessage;
-        String authurl = authtokenurl + "umid="+umid+"&token="+token;
-        retMessage = restTemplate.getForObject(authurl, RetMessage.class);
+        String authurl = authtokenurl + "umid={umid}&token={token}";
+        retMessage = restTemplate.getForObject(authurl, RetMessage.class,umid,token);
         if(retMessage.getErrorCode().equals("0")){
             ret = true;
         }else{
@@ -84,8 +106,8 @@ public class UserService {
     private int getDbIndex(int umid){
         int ret = -1;
         RetMessage retMessage;
-        String url = getuserinfourl + "umid=" + umid;
-        retMessage = restTemplate.getForObject(url, RetMessage.class);
+        String url = getuserinfourl + "umid={umid}";
+        retMessage = restTemplate.getForObject(url, RetMessage.class,umid);
         if(retMessage.getErrorCode().equals("0")) {
             String retContent = retMessage.getRetContent();
             Map<String,String> map = jsonString2Map(retContent);

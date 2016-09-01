@@ -6,6 +6,7 @@ import com.corundumstudio.socketio.listener.DisconnectListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 
 public class MyDisconncetListener implements DisconnectListener {
@@ -21,19 +22,31 @@ public class MyDisconncetListener implements DisconnectListener {
             clientIp = socketIOClient.getRemoteAddress().toString();
         }
         UUID sessionId = socketIOClient.getSessionId();
-        if(Application.user_client_cache.get(sessionId)!=null){
-            umid = Application.user_client_cache.get(sessionId);
+
+        //<sessionId,umid>
+        if(Application.sessionid_key_cache.containsKey(sessionId)){
+            umid = Application.sessionid_key_cache.get(sessionId);
+            Application.sessionid_key_cache.remove(sessionId);
         }
 
         if(umid > 0){
-            if (Application.client_cache.get(umid).getSessionId().equals(socketIOClient.getSessionId())){ //如果当前缓存中的client就是断开的client
-                //清除当前信息
-                Application.client_cache.remove(umid);
+            //<umid,List<socket>>
+            if(Application.umid_key_cache.containsKey(umid)){
+                List<SocketIOClient> socketIOClientList = Application.umid_key_cache.get(umid);
+                if(socketIOClientList.contains(socketIOClient)){
+                    socketIOClientList.remove(socketIOClient);
+                }
+
+                if(socketIOClientList.size()>0){
+                    Application.umid_key_cache.put(umid,socketIOClientList);
+                }else{
+                    Application.umid_key_cache.remove(umid);
+                }
             }
-            //清除关系缓存中的信息
-            Application.user_client_cache.remove(socketIOClient.getSessionId());
+        }else{
+            log.error("get umid error from Application.sessionid_key_cache! umid:{} sessionId:{}", umid, sessionId);
         }
 
-        log.debug("clientip:{} disconnected. client socket is:{}",clientIp,socketIOClient.toString());
+        log.debug("clientip:{} umid:{} disconnected.",clientIp,umid);
     }
 }
