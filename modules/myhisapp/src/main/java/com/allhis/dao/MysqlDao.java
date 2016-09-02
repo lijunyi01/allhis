@@ -111,9 +111,27 @@ public class MysqlDao {
         return ret;
     }
 
-    public boolean itemIdexists(int umid,int projectId,int itemId,int tableindex){
+    public boolean itemIdexists(int umid,int itemId,int tableindex){
         boolean ret = false;
-        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from projectitem"+tableindex+" where id=? and projectid=? and umid=?",itemId,projectId,umid);
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from projectitem"+tableindex+" where id=? and umid=?",itemId,umid);
+        if(mapList.size()==1){
+            ret = true;
+        }
+        return ret;
+    }
+
+    public boolean fileIdexists(int umid,int fileId,int tableindex){
+        boolean ret = false;
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from itemfile"+tableindex+" where id=? and umid=?",fileId,umid);
+        if(mapList.size()==1){
+            ret = true;
+        }
+        return ret;
+    }
+
+    public boolean tipIdexists(int umid,int tipId,int tableindex){
+        boolean ret = false;
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from itemtips"+tableindex+" where id=? and umid=?",tipId,umid);
         if(mapList.size()==1){
             ret = true;
         }
@@ -149,6 +167,26 @@ public class MysqlDao {
 
     public List<Map<String,Object>> getItemFiles(int umid,int tableindex,int projectId,int itemId){
         return jdbcTemplate.queryForList("select id,filename,filesuffix,filepath from itemfile" + tableindex +" where umid=? and projectid=? and itmeid=?",umid,projectId,itemId);
+    }
+
+    public int delItemFile(int umid,int tableindex,int fileId){
+        return jdbcTemplate.update("delete from itemfile"+tableindex+" where id=? and umid=?",fileId,umid);
+    }
+
+    public int delItemTip(int umid,int tableindex,int tipId){
+        return jdbcTemplate.update("delete from itemtips"+tableindex+" where id=? and umid=?",tipId,umid);
+    }
+
+    public int delItemTips(int umid,int tableindex,int itemId){
+        return jdbcTemplate.update("delete from itemtips"+tableindex+" where itemid=? and umid=?",itemId,umid);
+    }
+
+    public int delItemFiles(int umid,int tableindex,int itemId){
+        return jdbcTemplate.update("delete from itemfile"+tableindex+" where itemid=? and umid=?",itemId,umid);
+    }
+
+    public int delItem(int umid,int tableindex,int itemId){
+        return jdbcTemplate.update("delete from projectitem"+tableindex+" where id=? and umid=?",itemId,umid);
     }
 
 }

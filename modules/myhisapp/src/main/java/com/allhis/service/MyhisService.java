@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -109,6 +110,83 @@ public class MyhisService {
         }else if(functionName.equals("getProjectItems")){
             int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
             retMessage = getProjectItems(umid,tableindex,projectId);
+
+        }else if(functionName.equals("delItemFile")){
+            int fileId = GlobalTools.convertStringToInt(parammap.get("fileId").toString());
+            retMessage = delItemFile(umid,tableindex,fileId);
+
+        }else if(functionName.equals("delItemTip")){
+            int tipId = GlobalTools.convertStringToInt(parammap.get("tipId").toString());
+            retMessage = delItemTip(umid, tableindex, tipId);
+
+        }else if(functionName.equals("delItem")){
+            int itemId = GlobalTools.convertStringToInt(parammap.get("itemId").toString());
+            retMessage = delItem(umid, tableindex, itemId);
+        }
+        return retMessage;
+    }
+
+    private RetMessage delItem(int umid,int tableindex,int itemId){
+        RetMessage retMessage = new RetMessage();
+        //校验itemId是否存在
+        if(mysqlDao.itemIdexists(umid, itemId, tableindex)) {
+            deleteItem(umid,tableindex,itemId);
+            if(!mysqlDao.itemIdexists(umid, itemId, tableindex)){
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+            }else{
+                retMessage.setErrorCode("-1080");
+                retMessage.setErrorMessage("del item failed!");
+            }
+        }else{
+            retMessage.setErrorCode("-1081");
+            retMessage.setErrorMessage("itemid not exist");
+            log.error("itemid not exist! umid:{} itemid:{}", umid, itemId);
+        }
+        return retMessage;
+    }
+
+    @Transactional
+    private void deleteItem(int umid,int tableindex,int itemId){
+        mysqlDao.delItemFiles(umid,tableindex,itemId);
+        mysqlDao.delItemTips(umid,tableindex,itemId);
+        mysqlDao.delItem(umid,tableindex,itemId);
+    }
+
+    private RetMessage delItemTip(int umid,int tableindex,int tipId){
+        RetMessage retMessage = new RetMessage();
+        //校验itemId是否存在
+        if(mysqlDao.tipIdexists(umid, tipId, tableindex)) {
+            if(mysqlDao.delItemTip(umid, tableindex, tipId) > 0){
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+            }else{
+                retMessage.setErrorCode("-1070");
+                retMessage.setErrorMessage("del tip failed!");
+            }
+        }else{
+            retMessage.setErrorCode("-1071");
+            retMessage.setErrorMessage("tipid not exist");
+            log.error("tipid not exist! umid:{} tipid:{}", umid, tipId);
+        }
+        return retMessage;
+    }
+
+    private RetMessage delItemFile(int umid,int tableindex,int fileId){
+        RetMessage retMessage = new RetMessage();
+        //校验itemId是否存在
+        if(mysqlDao.fileIdexists(umid, fileId, tableindex)) {
+            if(mysqlDao.delItemFile(umid,tableindex,fileId) > 0){
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+            }else{
+                retMessage.setErrorCode("-1060");
+                retMessage.setErrorMessage("del file failed!");
+            }
+        }else{
+            retMessage.setErrorCode("-1061");
+            retMessage.setErrorMessage("fileid not exist");
+            log.error("fileid not exist! umid:{} fileid:{}", umid, fileId);
         }
         return retMessage;
     }
@@ -171,7 +249,7 @@ public class MyhisService {
     private RetMessage addItemFile(int umid,int tableindex,int projectId,int itemId,String fileName,String filePath){
         RetMessage retMessage = new RetMessage();
         //校验itemId是否存在
-        if(mysqlDao.itemIdexists(umid, projectId, itemId,tableindex)) {
+        if(mysqlDao.itemIdexists(umid,itemId,tableindex)) {
             String fileSuffix = "";
             if(fileName.indexOf(".") > -1){
                 fileSuffix = fileName.substring(fileName.indexOf(".")+1,fileName.length());
@@ -199,7 +277,7 @@ public class MyhisService {
     private RetMessage addItemTip(int umid,int tableindex,int projectId,int itemId,String tipContent){
         RetMessage retMessage = new RetMessage();
         //校验itemId是否存在
-        if(mysqlDao.itemIdexists(umid, projectId, itemId,tableindex)) {
+        if(mysqlDao.itemIdexists(umid,itemId,tableindex)) {
             int tipId = mysqlDao.addItemTip(tableindex, umid, projectId, itemId, tipContent);
             if (tipId > 0) {
                 retMessage.setErrorCode("0");
@@ -296,6 +374,14 @@ public class MyhisService {
             }
         }else if(functionName.equals("getProjectItems")){
             if(parammap.get("projectId")==null){
+                ret = false;
+            }
+        }else if(functionName.equals("delItemFile")){
+            if(parammap.get("fileId")==null){
+                ret = false;
+            }
+        }else if(functionName.equals("delItemTip")){
+            if(parammap.get("tipId")==null){
                 ret = false;
             }
         }
