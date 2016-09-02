@@ -8,10 +8,14 @@ CREATE TABLE myproject0(
     umid INT NOT NULL,
     -- 项目名
     projectname VARCHAR(32) NOT NULL ,
+    -- 项目描述
+    projectdes VARCHAR(1024) NULL,
     -- 项目创建时间
     createtime DATETIME,
     -- 最后修改时间
     lasttime DATETIME,
+    -- 私有还是公开  0:私有  1:公开
+    shareflag INT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     UNIQUE KEY (umid,projectname),
     KEY (lasttime)
@@ -27,7 +31,7 @@ CREATE TABLE projectitem0(
     -- 事件名称/标题
     itemname VARCHAR(128) NOT NULL ,
     -- 事件更具体的内容
-    itemcontent VARCHAR(512) NULL ,
+    itemcontent VARCHAR(1024) NULL ,
     -- 事件开始时间
     starttime DATETIME NOT NULL ,
     -- 事件结束时间
@@ -49,6 +53,21 @@ CREATE TABLE itemfile0(
     filesuffix VARCHAR(8) NULL ,
     -- 文件存储时是路径；对象存储时是索引
     filepath VARCHAR(128) NOT NULL ,
+    PRIMARY KEY (id),
+    KEY (itemid),
+    KEY (projectid),
+    KEY (umid)
+)ENGINE = MYISAM;
+
+DROP TABLE IF EXISTS itemtips0;
+CREATE TABLE itemtips0(
+    id INT NOT NULL AUTO_INCREMENT,
+    -- 对应于projectitem0表的id
+    itemid INT,
+    -- 以下两项用于冗余，用于方便地按projectid或umid删除数据等
+    projectid INT,
+    umid INT NOT NULL,
+    tipcontent VARCHAR(256) NULL ,
     PRIMARY KEY (id),
     KEY (itemid),
     KEY (projectid),

@@ -6,8 +6,6 @@ import com.allhis.toolkit.GlobalTools;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +35,15 @@ public class MyhisService {
     public RetMessage generalService(int umid,String functionName,String generalParam){
         RetMessage retMessage = new RetMessage();
         int tableindex = userInfoService.getTableIndex(umid);
-        if(tableindex < 0){
-            retMessage.setErrorCode("-100");
+        if(tableindex < 0) {
+            retMessage.setErrorCode("-1000");
             retMessage.setErrorMessage("failed to get tableindex");
-            log.error("get tableindex failed,umid:{}",umid);
+            log.error("get tableindex failed,umid:{}", umid);
+
+        }else if(functionName == null || generalParam == null){
+            retMessage.setErrorCode("-1002");
+            retMessage.setErrorMessage("param error");
+            log.error("param error! umid:{} functionName:{} generalParam:{}",umid,functionName,generalParam);
 
         }else{
 
@@ -50,7 +53,7 @@ public class MyhisService {
                 //实际工作者
                 retMessage = doService(umid, tableindex, functionName, jsonmap);
             }else{
-                retMessage.setErrorCode("-101");
+                retMessage.setErrorCode("-1001");
                 retMessage.setErrorMessage("param error");
                 log.error("param check failed,umid:{} functionName:{} generalParam:{}",umid,functionName,generalParam);
             }
@@ -64,6 +67,7 @@ public class MyhisService {
         if(functionName.equals("createProject")){
             String projectName = parammap.get("projectName").toString();
             retMessage = createProject(projectName,umid,tableindex);
+
         }else if(functionName.equals("createItem")){
             int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
             String itemName = parammap.get("itemName").toString();
@@ -71,12 +75,96 @@ public class MyhisService {
             String begintime = parammap.get("begintime").toString();
             String endtime = parammap.get("endtime").toString();
             retMessage = createItem(umid,tableindex,projectId,itemName,itemContent,begintime,endtime);
+
         }else if(functionName.equals("getAllProjects")){
             String sortFlag = null;
+            int pageIndex = -1;
+            int pageNum = -1;
             if(parammap.get("sortFlag")!=null){
                 sortFlag = parammap.get("sortFlag").toString();
             }
-            retMessage = getAllProjects(umid,tableindex,sortFlag);
+            if(parammap.get("pageIndex")!=null){
+                pageIndex = GlobalTools.convertStringToInt(parammap.get("pageIndex").toString());
+            }
+            if(parammap.get("pageNum")!=null){
+                pageNum = GlobalTools.convertStringToInt(parammap.get("pageNum").toString());
+            }
+            retMessage = getAllProjects(umid,tableindex,sortFlag,pageIndex,pageNum);
+
+        }else if(functionName.equals("addItemTip")){
+            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
+            int itemId = GlobalTools.convertStringToInt(parammap.get("itemId").toString());
+            String tipContent = parammap.get("tipContent").toString();
+            retMessage = addItemTip(umid, tableindex, projectId, itemId, tipContent);
+
+        }else if(functionName.equals("addItemFile")){
+            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
+            int itemId = GlobalTools.convertStringToInt(parammap.get("itemId").toString());
+            String fileName = parammap.get("fileName").toString();
+            String filePath = parammap.get("filePath").toString();
+            retMessage = addItemFile(umid, tableindex, projectId, itemId, fileName, filePath);
+
+        }else if(functionName.equals("getProjectItems")){
+            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
+            retMessage = getProjectItems(umid,tableindex,projectId);
+        }
+        return retMessage;
+    }
+
+    private RetMessage getProjectItems(int umid,int tableindex,int projectId){
+        RetMessage retMessage = new RetMessage();
+
+        return retMessage;
+    }
+
+    private RetMessage addItemFile(int umid,int tableindex,int projectId,int itemId,String fileName,String filePath){
+        RetMessage retMessage = new RetMessage();
+        //校验itemId是否存在
+        if(mysqlDao.itemIdexists(umid, projectId, itemId,tableindex)) {
+            String fileSuffix = "";
+            if(fileName.indexOf(".") > -1){
+                fileSuffix = fileName.substring(fileName.indexOf(".")+1,fileName.length());
+            }
+            int fileId = mysqlDao.addItemFile(tableindex, umid, projectId, itemId, fileName,fileSuffix,filePath);
+            if (fileId > 0) {
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+                Map<String, Object> map = new HashMap<>();
+                map.put("fileId", fileId);
+                retMessage.setRetContent(map2JsonString(map));
+            } else {
+                retMessage.setErrorCode("-1040");
+                retMessage.setErrorMessage("failed to add item file");
+                log.error("add item file failed,umid:{} projectid:{} itmeid:{}", umid, projectId, itemId);
+            }
+        }else{
+            retMessage.setErrorCode("-1041");
+            retMessage.setErrorMessage("item not exist");
+            log.error("itme not exist! umid:{} projectid:{} itemid:{}", umid, projectId, itemId);
+        }
+        return retMessage;
+    }
+
+    private RetMessage addItemTip(int umid,int tableindex,int projectId,int itemId,String tipContent){
+        RetMessage retMessage = new RetMessage();
+        //校验itemId是否存在
+        if(mysqlDao.itemIdexists(umid, projectId, itemId,tableindex)) {
+            int tipId = mysqlDao.addItemTip(tableindex, umid, projectId, itemId, tipContent);
+            if (tipId > 0) {
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+                Map<String, Object> map = new HashMap<>();
+                map.put("tipId", tipId);
+                retMessage.setRetContent(map2JsonString(map));
+            } else {
+                retMessage.setErrorCode("-1030");
+                retMessage.setErrorMessage("failed to add item tip");
+                log.error("add item tip failed,umid:{} projectid:{} itmeid:{}", umid, projectId, itemId);
+            }
+        }else{
+            retMessage.setErrorCode("-1031");
+            retMessage.setErrorMessage("item not exist");
+            log.error("itme not exist! umid:{} projectid:{} itemid:{}", umid, projectId, itemId);
         }
         return retMessage;
     }
@@ -90,11 +178,11 @@ public class MyhisService {
         if(projectId >0){   //project项目创建成功
             retMessage.setErrorCode("0");
             retMessage.setErrorMessage("success");
-            Map<String,String> map = new HashMap<>();
-            map.put("projectId",projectId+"");
+            Map<String,Object> map = new HashMap<>();
+            map.put("projectId",projectId);
             retMessage.setRetContent(map2JsonString(map));
         }else{
-            retMessage.setErrorCode("-10");
+            retMessage.setErrorCode("-1010");
             retMessage.setErrorMessage("failed to create project");
             log.error("cteate project failed,umid:{} projectname:{} tableindex:{}",umid,projectname,tableindex);
         }
@@ -109,16 +197,16 @@ public class MyhisService {
             if(itemId > 0){
                 retMessage.setErrorCode("0");
                 retMessage.setErrorMessage("success");
-                Map<String,String> map = new HashMap<>();
-                map.put("itmeId",itemId+"");
+                Map<String,Object> map = new HashMap<>();
+                map.put("itmeId",itemId);
                 retMessage.setRetContent(map2JsonString(map));
             }else{
-                retMessage.setErrorCode("-12");
+                retMessage.setErrorCode("-1020");
                 retMessage.setErrorMessage("failed to create itme");
                 log.error("cteate item failed,umid:{} projecid:{} itemname:{}",umid,projectid,itemname);
             }
         }else{
-            retMessage.setErrorCode("-11");
+            retMessage.setErrorCode("-1021");
             retMessage.setErrorMessage("project not exist");
             log.error("project not exist! umid:{} projectid:{}",umid,projectid);
         }
@@ -126,25 +214,40 @@ public class MyhisService {
         return retMessage;
     }
 
-    private RetMessage getAllProjects(int umid,int tableindex,String sortFlag){
+    private RetMessage getAllProjects(int umid,int tableindex,String sortFlag,int pageIndex,int pageNum){
         RetMessage retMessage = new RetMessage();
-        List<Map<String,Object>> mapList = mysqlDao.getAllProjects(umid,tableindex,sortFlag);
+        List<Map<String,Object>> mapList = mysqlDao.getAllProjects(umid,tableindex,sortFlag,pageIndex,pageNum);
         retMessage.setErrorCode("0");
         retMessage.setErrorMessage("success");
         retMessage.setRetContent(maplist2JsonString(mapList));
         return retMessage;
     }
 
+    //校验参数
     private boolean paramcheck(String functionName,Map<String,String> parammap){
-        boolean ret = false;
+        boolean ret = true;
+        //之前已经初步判断过，functionName和parammap 都不为null
         if(functionName.equals("createProject")){
-            if(parammap!=null){
-                //todo:
-                ret = true;
+            if(parammap.get("projectName")==null) {
+                ret = false;
+            }
+        }else if(functionName.equals("createItem")){
+            if(parammap.get("projectId")==null || parammap.get("itemName")==null || parammap.get("itemContent")==null || parammap.get("begintime")==null || parammap.get("endtime")==null){
+                ret = false;
+            }
+        }else if(functionName.equals("addItemTip")){
+            if(parammap.get("projectId")==null || parammap.get("itemId")==null || parammap.get("tipContent")==null){
+                ret = false;
+            }
+        }else if(functionName.equals("addItemFile")){
+            if(parammap.get("projectId")==null || parammap.get("itemId")==null || parammap.get("fileName")==null || parammap.get("filePath")==null){
+                ret = false;
+            }
+        }else if(functionName.equals("getProjectItems")){
+            if(parammap.get("projectId")==null){
+                ret = false;
             }
         }
-        //todo：测试用
-        ret = true;
         return ret;
     }
 
@@ -163,7 +266,7 @@ public class MyhisService {
         return jsonmap;
     }
 
-    private String map2JsonString(Map<String,String> map){
+    private String map2JsonString(Map<String,Object> map){
         String ret = null;
         if(map!=null){
             try {

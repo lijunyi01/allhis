@@ -64,6 +64,44 @@ public class MysqlDao {
         return ret;
     }
 
+    public int addItemTip(final int tableindex,final int umid,final int projectId,final int itemId,final String tipContent){
+        int ret = -1;
+        KeyHolder key=new GeneratedKeyHolder();
+        jdbcTemplate.update(new PreparedStatementCreator(){
+
+            public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                PreparedStatement preState=con.prepareStatement("insert into itemtips"+ tableindex +"(umid,projectid,itemid,tipcontent) values(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                preState.setInt(1,umid);
+                preState.setInt(2, projectId);
+                preState.setInt(3, itemId);
+                preState.setString(4,tipContent);
+                return preState;
+            }
+        },key);
+        ret = key.getKey().intValue();
+        return ret;
+    }
+
+    public int addItemFile(final int tableindex,final int umid,final int projectId,final int itemId,final String fileName,final String fileSuffix,final String filePath){
+        int ret = -1;
+        KeyHolder key=new GeneratedKeyHolder();
+        jdbcTemplate.update(new PreparedStatementCreator(){
+
+            public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                PreparedStatement preState=con.prepareStatement("insert into itemfile"+ tableindex +"(umid,projectid,itemid,filename,filesuffix,filepath) values(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                preState.setInt(1,umid);
+                preState.setInt(2, projectId);
+                preState.setInt(3, itemId);
+                preState.setString(4,fileName);
+                preState.setString(5,fileSuffix);
+                preState.setString(6,filePath);
+                return preState;
+            }
+        },key);
+        ret = key.getKey().intValue();
+        return ret;
+    }
+
     public boolean projectIdexists(int umid,int projectId,int tableindex){
         boolean ret = false;
         List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from myproject"+tableindex+" where id=? and umid=?",projectId,umid);
@@ -73,12 +111,30 @@ public class MysqlDao {
         return ret;
     }
 
-    public List<Map<String,Object>> getAllProjects(int umid,int tableindex,String sortFlag){
+    public boolean itemIdexists(int umid,int projectId,int itemId,int tableindex){
+        boolean ret = false;
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from projectitem"+tableindex+" where id=? and projectid=? and umid=?",itemId,projectId,umid);
+        if(mapList.size()==1){
+            ret = true;
+        }
+        return ret;
+    }
+
+    public List<Map<String,Object>> getAllProjects(int umid,int tableindex,String sortFlag,int pageIndex,int pageNum){
         List<Map<String,Object>> mapList;
-        if(sortFlag!=null && sortFlag.equals("lasttime")){
-            mapList = jdbcTemplate.queryForList("select * from myproject" + tableindex + " where umid=? order by lasttime desc", umid);
-        }else {
-            mapList = jdbcTemplate.queryForList("select * from myproject" + tableindex + " where umid=? order by id desc", umid);
+        if(pageIndex>0 && pageNum >0) {
+            int beginPos = (pageIndex-1)*pageNum;
+            if (sortFlag != null && sortFlag.equals("lasttime")) {
+                mapList = jdbcTemplate.queryForList("select * from myproject" + tableindex + " where umid=? limit {},{} order by lasttime desc", umid,beginPos,pageNum);
+            } else {
+                mapList = jdbcTemplate.queryForList("select * from myproject" + tableindex + " where umid=? limit {},{} order by id desc", umid,beginPos,pageNum);
+            }
+        }else{
+            if (sortFlag != null && sortFlag.equals("lasttime")) {
+                mapList = jdbcTemplate.queryForList("select * from myproject" + tableindex + " where umid=? order by lasttime desc", umid);
+            } else {
+                mapList = jdbcTemplate.queryForList("select * from myproject" + tableindex + " where umid=? order by id desc", umid);
+            }
         }
         return mapList;
     }
