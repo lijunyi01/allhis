@@ -139,4 +139,16 @@ public class MysqlDao {
         return mapList;
     }
 
+    public List<Map<String,Object>> getProjectItems(int umid,int tableindex,int projectId){
+        return jdbcTemplate.queryForList("select * from projectitem" + tableindex +" where umid=? and projectid=?",umid,projectId);
+    }
+
+    public List<Map<String,Object>> getItemTips(int umid,int tableindex,int projectId,int itemId){
+        return jdbcTemplate.queryForList("select id,tipcontent from itemtips" + tableindex +" where umid=? and projectid=? and itmeid=?",umid,projectId,itemId);
+    }
+
+    public List<Map<String,Object>> getItemFiles(int umid,int tableindex,int projectId,int itemId){
+        return jdbcTemplate.queryForList("select id,filename,filesuffix,filepath from itemfile" + tableindex +" where umid=? and projectid=? and itmeid=?",umid,projectId,itemId);
+    }
+
 }

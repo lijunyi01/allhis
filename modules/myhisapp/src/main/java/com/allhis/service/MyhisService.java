@@ -1,5 +1,6 @@
 package com.allhis.service;
 
+import com.allhis.bean.ItemBean;
 import com.allhis.bean.RetMessage;
 import com.allhis.dao.MysqlDao;
 import com.allhis.toolkit.GlobalTools;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +115,55 @@ public class MyhisService {
 
     private RetMessage getProjectItems(int umid,int tableindex,int projectId){
         RetMessage retMessage = new RetMessage();
+        List<Map<String,Object>> mapList = mysqlDao.getProjectItems(umid,tableindex,projectId);
+        List<ItemBean> itemBeanList = new ArrayList<>();
+        for(Map<String,Object> map: mapList){
+            int itemId = GlobalTools.convertStringToInt(map.get("id").toString());
+            String itemName = map.get("itemname").toString();
+            String itemContent = null;
+            if(map.get("itemcontent")!=null){
+                itemContent= map.get("itemcontent").toString();
+            }
+            String starttime = map.get("starttime").toString();
+            String endtime = null;
+            if(map.get("endtime")!=null){
+                endtime = map.get("endtime").toString();
+            }
+
+            if(itemId > 0){
+                ItemBean itemBean = new ItemBean();
+                itemBean.setItemId(itemId);
+                itemBean.setItemName(itemName);
+                if(itemContent!=null){
+                    itemBean.setItemContent(itemContent);
+                }
+                itemBean.setStartTime(starttime);
+                if(endtime!=null){
+                    itemBean.setEndTime(endtime);
+                }
+                List<Map<String,Object>> tipMapList = mysqlDao.getItemTips(umid,tableindex,projectId,itemId);
+                List<Map<String,Object>> fileMapList = mysqlDao.getItemFiles(umid,tableindex,projectId,itemId);
+                itemBean.setItemTipMapList(tipMapList);
+                itemBean.setItemFileMapList(fileMapList);
+
+                itemBeanList.add(itemBean);
+
+            }else{
+                log.error("itemid error! itemid:{}", itemId);
+            }
+        }
+
+        //将List<ItemBean> itemBeanList 序列化
+        String serializedItemBeanList = beanlist2JsonString(itemBeanList);
+        if(serializedItemBeanList != null) {
+            retMessage.setErrorCode("0");
+            retMessage.setErrorMessage("success");
+            retMessage.setRetContent(serializedItemBeanList);
+        }else{
+            retMessage.setErrorCode("-1050");
+            retMessage.setErrorMessage("failed to serialize itemBeanList!");
+            log.error("failed to serialize itemBeanList! umid:{} projectid:{}",umid,projectId);
+        }
 
         return retMessage;
     }
@@ -291,6 +342,21 @@ public class MyhisService {
         }else{
             log.error("invalid maplist!");
         }
+        return ret;
+    }
+
+    private String beanlist2JsonString(List beanList){
+        String ret = null;
+        if(beanList!=null){
+            try {
+                ret = mapper.writeValueAsString(beanList);
+            } catch (JsonProcessingException e) {
+                log.error("exception catched in beanlist converting to json string! {}",e.toString());
+            }
+        }else{
+            log.error("invalid beanlist!");
+        }
+
         return ret;
     }
 }
