@@ -69,7 +69,8 @@ public class MyhisService {
         RetMessage retMessage = new RetMessage();
         if(functionName.equals("createProject")){
             String projectName = parammap.get("projectName").toString();
-            retMessage = createProject(projectName,umid,tableindex);
+            String projectDes = parammap.get("projectDes").toString();;
+            retMessage = createProject(projectName,umid,tableindex,projectDes);
 
         }else if(functionName.equals("createItem")){
             int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
@@ -122,8 +123,67 @@ public class MyhisService {
         }else if(functionName.equals("delItem")){
             int itemId = GlobalTools.convertStringToInt(parammap.get("itemId").toString());
             retMessage = delItem(umid, tableindex, itemId);
+
+        }else if(functionName.equals("delProject")){
+            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
+            retMessage = delProject(umid, tableindex, projectId);
+
+        }else if(functionName.equals("modifyProject")){
+            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
+            String projectName = parammap.get("projectName").toString();
+            String projectDes = parammap.get("projectDes").toString();
+            retMessage = modifyProject(umid, tableindex, projectId, projectName, projectDes);
         }
         return retMessage;
+    }
+
+    private RetMessage modifyProject(int umid,int tableindex,int projectId,String projectName,String projectDes){
+        RetMessage retMessage = new RetMessage();
+        //校验projectId是否存在
+        if(mysqlDao.projectIdexists(umid, projectId, tableindex)) {
+            String nt = String.valueOf(GlobalTools.getTimeBefore(0));
+            if(mysqlDao.modifyProject(umid,tableindex,projectId,projectName,projectDes,nt)>0){
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+            }else{
+                retMessage.setErrorCode("-1100");
+                retMessage.setErrorMessage("modify projectid failed");
+                log.error("modify projectid failed! umid:{} projectid:{}", umid, projectId);
+            }
+        }else{
+            retMessage.setErrorCode("-1091");
+            retMessage.setErrorMessage("projectid not exist");
+            log.error("projectid not exist! umid:{} projectid:{}", umid, projectId);
+        }
+        return retMessage;
+    }
+
+    private RetMessage delProject(int umid,int tableindex,int projectId){
+        RetMessage retMessage = new RetMessage();
+        //校验projectId是否存在
+        if(mysqlDao.projectIdexists(umid, projectId, tableindex)) {
+            deleteProject(umid, tableindex, projectId);
+            if(!mysqlDao.projectIdexists(umid, projectId, tableindex)){
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+            }else{
+                retMessage.setErrorCode("-1090");
+                retMessage.setErrorMessage("del project failed!");
+            }
+        }else{
+            retMessage.setErrorCode("-1091");
+            retMessage.setErrorMessage("projectid not exist");
+            log.error("projectid not exist! umid:{} projectid:{}", umid, projectId);
+        }
+        return retMessage;
+    }
+
+    @Transactional
+    private void deleteProject(int umid,int tableindex,int projectId){
+        mysqlDao.delItemFiles(umid,tableindex,projectId,1);
+        mysqlDao.delItemTips(umid,tableindex,projectId,1);
+        mysqlDao.delItemsByProjectId(umid, tableindex, projectId);
+        mysqlDao.delProject(umid,tableindex,projectId);
     }
 
     private RetMessage delItem(int umid,int tableindex,int itemId){
@@ -148,8 +208,8 @@ public class MyhisService {
 
     @Transactional
     private void deleteItem(int umid,int tableindex,int itemId){
-        mysqlDao.delItemFiles(umid,tableindex,itemId);
-        mysqlDao.delItemTips(umid,tableindex,itemId);
+        mysqlDao.delItemFiles(umid,tableindex,itemId,2);
+        mysqlDao.delItemTips(umid,tableindex,itemId,2);
         mysqlDao.delItem(umid,tableindex,itemId);
     }
 
@@ -298,12 +358,12 @@ public class MyhisService {
         return retMessage;
     }
 
-    private RetMessage createProject(String projectname,int umid,int tableindex){
+    private RetMessage createProject(String projectname,int umid,int tableindex,String projectdes){
         RetMessage retMessage = new RetMessage();
 
         //创建项目
         String nt = String.valueOf(GlobalTools.getTimeBefore(0));
-        int projectId = mysqlDao.addProject(tableindex, umid, projectname, nt);
+        int projectId = mysqlDao.addProject(tableindex, umid, projectname, projectdes,nt);
         if(projectId >0){   //project项目创建成功
             retMessage.setErrorCode("0");
             retMessage.setErrorMessage("success");
@@ -357,7 +417,7 @@ public class MyhisService {
         boolean ret = true;
         //之前已经初步判断过，functionName和parammap 都不为null
         if(functionName.equals("createProject")){
-            if(parammap.get("projectName")==null) {
+            if(parammap.get("projectName")==null || parammap.get("projectDes")==null) {
                 ret = false;
             }
         }else if(functionName.equals("createItem")){
@@ -382,6 +442,10 @@ public class MyhisService {
             }
         }else if(functionName.equals("delItemTip")){
             if(parammap.get("tipId")==null){
+                ret = false;
+            }
+        }else if(functionName.equals("modifyProject")){
+            if(parammap.get("projectId")==null || parammap.get("projectName")==null || parammap.get("projectDes")==null) {
                 ret = false;
             }
         }

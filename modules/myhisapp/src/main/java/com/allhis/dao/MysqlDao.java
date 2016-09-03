@@ -27,16 +27,17 @@ public class MysqlDao {
     JdbcTemplate jdbcTemplate;
 
     //返回自增长id的值
-    public int addProject(final int tableindex,final int umid,final String projectname, final String createtime){
+    public int addProject(final int tableindex,final int umid,final String projectname,final String projectdes, final String createtime){
         int ret = -1;
         KeyHolder key=new GeneratedKeyHolder();
         jdbcTemplate.update(new PreparedStatementCreator(){
 
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                PreparedStatement preState=con.prepareStatement("insert into myproject"+ tableindex +"(umid,projectname,createtime) values(?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement preState=con.prepareStatement("insert into myproject"+ tableindex +"(umid,projectname,createtime,projectdes) values(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
                 preState.setInt(1,umid);
                 preState.setString(2,projectname);
                 preState.setString(3,createtime);
+                preState.setString(4,projectdes);
                 return preState;
             }
         },key);
@@ -177,16 +178,40 @@ public class MysqlDao {
         return jdbcTemplate.update("delete from itemtips"+tableindex+" where id=? and umid=?",tipId,umid);
     }
 
-    public int delItemTips(int umid,int tableindex,int itemId){
-        return jdbcTemplate.update("delete from itemtips"+tableindex+" where itemid=? and umid=?",itemId,umid);
+    public int delItemTips(int umid,int tableindex,int id,int byidflag){
+        int ret = -1;
+        if(byidflag == 1) {  //projectid
+            ret = jdbcTemplate.update("delete from itemtips" + tableindex + " where projectid=? and umid=?", id, umid);
+        }else if(byidflag ==2){
+            ret = jdbcTemplate.update("delete from itemtips" + tableindex + " where itemid=? and umid=?", id, umid);
+        }
+        return ret;
     }
 
-    public int delItemFiles(int umid,int tableindex,int itemId){
-        return jdbcTemplate.update("delete from itemfile"+tableindex+" where itemid=? and umid=?",itemId,umid);
+    public int delItemFiles(int umid,int tableindex,int id,int byidflag) {
+        int ret = -1;
+        if(byidflag == 1){  //projectid
+            ret = jdbcTemplate.update("delete from itemfile" + tableindex + " where projectid=? and umid=?", id, umid);
+        }else if(byidflag == 2) {  //itemid
+            ret = jdbcTemplate.update("delete from itemfile" + tableindex + " where itemid=? and umid=?", id, umid);
+        }
+        return ret;
     }
 
     public int delItem(int umid,int tableindex,int itemId){
         return jdbcTemplate.update("delete from projectitem"+tableindex+" where id=? and umid=?",itemId,umid);
+    }
+
+    public int delItemsByProjectId(int umid,int tableindex,int projectId){
+        return jdbcTemplate.update("delete from projectitem"+tableindex+" where projectid=? and umid=?",projectId,umid);
+    }
+
+    public int delProject(int umid,int tableindex,int projectId){
+        return jdbcTemplate.update("delete from myproject"+tableindex+" where id=? and umid=?",projectId,umid);
+    }
+
+    public int modifyProject(int umid,int tableindex,int projectId,String projectName,String projectDes,String lasttime){
+        return jdbcTemplate.update("update myproject"+tableindex+" set projectname=?,projectdes=?,lasttime=? where id=? and umid=?",projectName,projectDes,lasttime,projectId,umid);
     }
 
 }
