@@ -33,11 +33,12 @@ public class MysqlDao {
         jdbcTemplate.update(new PreparedStatementCreator(){
 
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                PreparedStatement preState=con.prepareStatement("insert into myproject"+ tableindex +"(umid,projectname,createtime,projectdes) values(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement preState=con.prepareStatement("insert into myproject"+ tableindex +"(umid,projectname,createtime,projectdes,lasttime) values(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
                 preState.setInt(1,umid);
                 preState.setString(2,projectname);
                 preState.setString(3,createtime);
                 preState.setString(4,projectdes);
+                preState.setString(5,createtime);
                 return preState;
             }
         },key);
@@ -212,6 +213,18 @@ public class MysqlDao {
 
     public int modifyProject(int umid,int tableindex,int projectId,String projectName,String projectDes,String lasttime){
         return jdbcTemplate.update("update myproject"+tableindex+" set projectname=?,projectdes=?,lasttime=? where id=? and umid=?",projectName,projectDes,lasttime,projectId,umid);
+    }
+
+    public void setProjectLastTime(int tableindex,int projectId,String lasttime){
+        jdbcTemplate.update("update myproject"+tableindex+" set lasttiime=? where id=?",lasttime,projectId);
+    }
+
+    public int modifyItem(final int tableindex,final int umid,final int itemid,final String itemname, final String itemcontent, final String begintime, final String endtime){
+        return jdbcTemplate.update("update projectitem"+tableindex+" set itemname=?,itemcontent=?,begintime=?,endtime=? where id=? and umid=?",itemname,itemcontent,begintime,endtime,itemid,umid);
+    }
+
+    public int modifyItemTip(final int tableindex,final int umid,final int tipid, final String tipcontent){
+        return jdbcTemplate.update("update itemtips"+tableindex+" set tipcontent=? where id=? and umid=?",tipcontent,tipid,umid);
     }
 
 }

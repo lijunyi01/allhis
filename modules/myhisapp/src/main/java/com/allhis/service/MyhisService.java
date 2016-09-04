@@ -67,72 +67,158 @@ public class MyhisService {
 
     private RetMessage doService(int umid,int tableindex,String functionName,Map<String,String> parammap){
         RetMessage retMessage = new RetMessage();
-        if(functionName.equals("createProject")){
-            String projectName = parammap.get("projectName").toString();
-            String projectDes = parammap.get("projectDes").toString();;
-            retMessage = createProject(projectName,umid,tableindex,projectDes);
+        switch (functionName) {
+            case "createProject": {
+                String projectName = parammap.get("projectName");
+                String projectDes = parammap.get("projectDes");
+                retMessage = createProject(projectName, umid, tableindex, projectDes);
 
-        }else if(functionName.equals("createItem")){
-            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
-            String itemName = parammap.get("itemName").toString();
-            String itemContent = parammap.get("itemContent").toString();
-            String begintime = parammap.get("begintime").toString();
-            String endtime = parammap.get("endtime").toString();
-            retMessage = createItem(umid,tableindex,projectId,itemName,itemContent,begintime,endtime);
-
-        }else if(functionName.equals("getAllProjects")){
-            String sortFlag = null;
-            int pageIndex = -1;
-            int pageNum = -1;
-            if(parammap.get("sortFlag")!=null){
-                sortFlag = parammap.get("sortFlag").toString();
+                break;
             }
-            if(parammap.get("pageIndex")!=null){
-                pageIndex = GlobalTools.convertStringToInt(parammap.get("pageIndex").toString());
+            case "createItem": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                String itemName = parammap.get("itemName");
+                String itemContent = parammap.get("itemContent");
+                String begintime = parammap.get("begintime");
+                String endtime = parammap.get("endtime");
+                retMessage = createItem(umid, tableindex, projectId, itemName, itemContent, begintime, endtime);
+
+                break;
             }
-            if(parammap.get("pageNum")!=null){
-                pageNum = GlobalTools.convertStringToInt(parammap.get("pageNum").toString());
+            case "getAllProjects":
+                String sortFlag = null;
+                int pageIndex = -1;
+                int pageNum = -1;
+                if (parammap.get("sortFlag") != null) {
+                    sortFlag = parammap.get("sortFlag");
+                }
+                if (parammap.get("pageIndex") != null) {
+                    pageIndex = GlobalTools.convertStringToInt(parammap.get("pageIndex"));
+                }
+                if (parammap.get("pageNum") != null) {
+                    pageNum = GlobalTools.convertStringToInt(parammap.get("pageNum"));
+                }
+                retMessage = getAllProjects(umid, tableindex, sortFlag, pageIndex, pageNum);
+
+                break;
+            case "addItemTip": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                int itemId = GlobalTools.convertStringToInt(parammap.get("itemId"));
+                String tipContent = parammap.get("tipContent");
+                retMessage = addItemTip(umid, tableindex, projectId, itemId, tipContent);
+
+                break;
             }
-            retMessage = getAllProjects(umid,tableindex,sortFlag,pageIndex,pageNum);
+            case "addItemFile": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                int itemId = GlobalTools.convertStringToInt(parammap.get("itemId"));
+                String fileName = parammap.get("fileName");
+                String filePath = parammap.get("filePath");
+                retMessage = addItemFile(umid, tableindex, projectId, itemId, fileName, filePath);
 
-        }else if(functionName.equals("addItemTip")){
-            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
-            int itemId = GlobalTools.convertStringToInt(parammap.get("itemId").toString());
-            String tipContent = parammap.get("tipContent").toString();
-            retMessage = addItemTip(umid, tableindex, projectId, itemId, tipContent);
+                break;
+            }
+            case "getProjectItems": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                retMessage = getProjectItems(umid, tableindex, projectId);
 
-        }else if(functionName.equals("addItemFile")){
-            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
-            int itemId = GlobalTools.convertStringToInt(parammap.get("itemId").toString());
-            String fileName = parammap.get("fileName").toString();
-            String filePath = parammap.get("filePath").toString();
-            retMessage = addItemFile(umid, tableindex, projectId, itemId, fileName, filePath);
+                break;
+            }
+            case "delItemFile": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                int fileId = GlobalTools.convertStringToInt(parammap.get("fileId"));
+                retMessage = delItemFile(umid, tableindex, fileId, projectId);
 
-        }else if(functionName.equals("getProjectItems")){
-            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
-            retMessage = getProjectItems(umid,tableindex,projectId);
+                break;
+            }
+            case "delItemTip": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                int tipId = GlobalTools.convertStringToInt(parammap.get("tipId"));
+                retMessage = delItemTip(umid, tableindex, tipId, projectId);
 
-        }else if(functionName.equals("delItemFile")){
-            int fileId = GlobalTools.convertStringToInt(parammap.get("fileId").toString());
-            retMessage = delItemFile(umid,tableindex,fileId);
+                break;
+            }
+            case "delItem": {
+                int itemId = GlobalTools.convertStringToInt(parammap.get("itemId"));
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                retMessage = delItem(umid, tableindex, itemId, projectId);
 
-        }else if(functionName.equals("delItemTip")){
-            int tipId = GlobalTools.convertStringToInt(parammap.get("tipId").toString());
-            retMessage = delItemTip(umid, tableindex, tipId);
+                break;
+            }
+            case "delProject": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                retMessage = delProject(umid, tableindex, projectId);
 
-        }else if(functionName.equals("delItem")){
-            int itemId = GlobalTools.convertStringToInt(parammap.get("itemId").toString());
-            retMessage = delItem(umid, tableindex, itemId);
+                break;
+            }
+            case "modifyProject": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                String projectName = parammap.get("projectName");
+                String projectDes = parammap.get("projectDes");
+                retMessage = modifyProject(umid, tableindex, projectId, projectName, projectDes);
 
-        }else if(functionName.equals("delProject")){
-            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
-            retMessage = delProject(umid, tableindex, projectId);
+                break;
+            }
+            case "modifyItem": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                int itemId = GlobalTools.convertStringToInt(parammap.get("itemId"));
+                String itemName = parammap.get("itemName");
+                String itemContent = parammap.get("itemContent");
+                String begintime = parammap.get("begintime");
+                String endtime = parammap.get("endtime");
+                retMessage = modifyItem(umid, tableindex, projectId, itemId, itemName, itemContent, begintime, endtime);
 
-        }else if(functionName.equals("modifyProject")){
-            int projectId = GlobalTools.convertStringToInt(parammap.get("projectId").toString());
-            String projectName = parammap.get("projectName").toString();
-            String projectDes = parammap.get("projectDes").toString();
-            retMessage = modifyProject(umid, tableindex, projectId, projectName, projectDes);
+                break;
+            }
+            case "modifyItemTip": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                int tipId = GlobalTools.convertStringToInt(parammap.get("tipId"));
+                String tipContent = parammap.get("tipContent");
+                retMessage = modifyItemTip(umid, tableindex, projectId, tipId, tipContent);
+                break;
+            }
+        }
+        return retMessage;
+    }
+
+    private RetMessage modifyItemTip(int umid,int tableindex,int projectId,int tipId,String tipContent){
+        RetMessage retMessage = new RetMessage();
+        if(mysqlDao.tipIdexists(umid,tipId,tableindex)){
+            if(mysqlDao.modifyItemTip(tableindex,umid,tipId,tipContent) > 0){
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+                //更新project表的最后修改时间
+                renewLastTime(tableindex,projectId);
+            }else{
+                retMessage.setErrorCode("-1120");
+                retMessage.setErrorMessage("modify itemtip failed");
+                log.error("modify itemtip failed! umid:{} tipid:{}", umid, tipId);
+            }
+        }else{
+            retMessage.setErrorCode("-1071");
+            retMessage.setErrorMessage("tipid not exist");
+            log.error("tipid not exist! umid:{} tipid:{}", umid, tipId);
+        }
+        return retMessage;
+    }
+
+    private RetMessage modifyItem(int umid,int tableindex,int projectId,int itemId,String itemName,String itemContent,String begintime,String endtime){
+        RetMessage retMessage = new RetMessage();
+        if(mysqlDao.itemIdexists(umid,itemId,tableindex)){
+            if(mysqlDao.modifyItem(tableindex,umid,itemId,itemName,itemContent,begintime,endtime)>0){
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+                //更新project表的最后修改时间
+                renewLastTime(tableindex,projectId);
+            }else{
+                retMessage.setErrorCode("-1110");
+                retMessage.setErrorMessage("modify item failed");
+                log.error("modify item failed! umid:{} itemid:{}", umid, itemId);
+            }
+        }else{
+            retMessage.setErrorCode("-1081");
+            retMessage.setErrorMessage("itemid not exist");
+            log.error("itemid not exist! umid:{} itemid:{}", umid, itemId);
         }
         return retMessage;
     }
@@ -147,8 +233,8 @@ public class MyhisService {
                 retMessage.setErrorMessage("success");
             }else{
                 retMessage.setErrorCode("-1100");
-                retMessage.setErrorMessage("modify projectid failed");
-                log.error("modify projectid failed! umid:{} projectid:{}", umid, projectId);
+                retMessage.setErrorMessage("modify project failed");
+                log.error("modify project failed! umid:{} projectid:{}", umid, projectId);
             }
         }else{
             retMessage.setErrorCode("-1091");
@@ -186,7 +272,7 @@ public class MyhisService {
         mysqlDao.delProject(umid,tableindex,projectId);
     }
 
-    private RetMessage delItem(int umid,int tableindex,int itemId){
+    private RetMessage delItem(int umid,int tableindex,int itemId,int projectId){
         RetMessage retMessage = new RetMessage();
         //校验itemId是否存在
         if(mysqlDao.itemIdexists(umid, itemId, tableindex)) {
@@ -194,6 +280,8 @@ public class MyhisService {
             if(!mysqlDao.itemIdexists(umid, itemId, tableindex)){
                 retMessage.setErrorCode("0");
                 retMessage.setErrorMessage("success");
+                //更新project表的最后修改时间
+                renewLastTime(tableindex,projectId);
             }else{
                 retMessage.setErrorCode("-1080");
                 retMessage.setErrorMessage("del item failed!");
@@ -213,13 +301,15 @@ public class MyhisService {
         mysqlDao.delItem(umid,tableindex,itemId);
     }
 
-    private RetMessage delItemTip(int umid,int tableindex,int tipId){
+    private RetMessage delItemTip(int umid,int tableindex,int tipId,int projectId){
         RetMessage retMessage = new RetMessage();
         //校验itemId是否存在
         if(mysqlDao.tipIdexists(umid, tipId, tableindex)) {
             if(mysqlDao.delItemTip(umid, tableindex, tipId) > 0){
                 retMessage.setErrorCode("0");
                 retMessage.setErrorMessage("success");
+                //更新project表的最后修改时间
+                renewLastTime(tableindex,projectId);
             }else{
                 retMessage.setErrorCode("-1070");
                 retMessage.setErrorMessage("del tip failed!");
@@ -232,13 +322,15 @@ public class MyhisService {
         return retMessage;
     }
 
-    private RetMessage delItemFile(int umid,int tableindex,int fileId){
+    private RetMessage delItemFile(int umid,int tableindex,int fileId,int projectId){
         RetMessage retMessage = new RetMessage();
         //校验itemId是否存在
         if(mysqlDao.fileIdexists(umid, fileId, tableindex)) {
             if(mysqlDao.delItemFile(umid,tableindex,fileId) > 0){
                 retMessage.setErrorCode("0");
                 retMessage.setErrorMessage("success");
+                //更新project表的最后修改时间
+                renewLastTime(tableindex,projectId);
             }else{
                 retMessage.setErrorCode("-1060");
                 retMessage.setErrorMessage("del file failed!");
@@ -311,7 +403,7 @@ public class MyhisService {
         //校验itemId是否存在
         if(mysqlDao.itemIdexists(umid,itemId,tableindex)) {
             String fileSuffix = "";
-            if(fileName.indexOf(".") > -1){
+            if(fileName.contains(".")){
                 fileSuffix = fileName.substring(fileName.indexOf(".")+1,fileName.length());
             }
             int fileId = mysqlDao.addItemFile(tableindex, umid, projectId, itemId, fileName,fileSuffix,filePath);
@@ -321,6 +413,8 @@ public class MyhisService {
                 Map<String, Object> map = new HashMap<>();
                 map.put("fileId", fileId);
                 retMessage.setRetContent(map2JsonString(map));
+                //更新project表的最后修改时间
+                renewLastTime(tableindex,projectId);
             } else {
                 retMessage.setErrorCode("-1040");
                 retMessage.setErrorMessage("failed to add item file");
@@ -345,6 +439,8 @@ public class MyhisService {
                 Map<String, Object> map = new HashMap<>();
                 map.put("tipId", tipId);
                 retMessage.setRetContent(map2JsonString(map));
+                //更新project表的最后修改时间
+                renewLastTime(tableindex,projectId);
             } else {
                 retMessage.setErrorCode("-1030");
                 retMessage.setErrorMessage("failed to add item tip");
@@ -389,6 +485,8 @@ public class MyhisService {
                 Map<String,Object> map = new HashMap<>();
                 map.put("itmeId",itemId);
                 retMessage.setRetContent(map2JsonString(map));
+                //更新project表的最后修改时间
+                renewLastTime(tableindex,projectid);
             }else{
                 retMessage.setErrorCode("-1020");
                 retMessage.setErrorMessage("failed to create itme");
@@ -416,38 +514,62 @@ public class MyhisService {
     private boolean paramcheck(String functionName,Map<String,String> parammap){
         boolean ret = true;
         //之前已经初步判断过，functionName和parammap 都不为null
-        if(functionName.equals("createProject")){
-            if(parammap.get("projectName")==null || parammap.get("projectDes")==null) {
-                ret = false;
-            }
-        }else if(functionName.equals("createItem")){
-            if(parammap.get("projectId")==null || parammap.get("itemName")==null || parammap.get("itemContent")==null || parammap.get("begintime")==null || parammap.get("endtime")==null){
-                ret = false;
-            }
-        }else if(functionName.equals("addItemTip")){
-            if(parammap.get("projectId")==null || parammap.get("itemId")==null || parammap.get("tipContent")==null){
-                ret = false;
-            }
-        }else if(functionName.equals("addItemFile")){
-            if(parammap.get("projectId")==null || parammap.get("itemId")==null || parammap.get("fileName")==null || parammap.get("filePath")==null){
-                ret = false;
-            }
-        }else if(functionName.equals("getProjectItems")){
-            if(parammap.get("projectId")==null){
-                ret = false;
-            }
-        }else if(functionName.equals("delItemFile")){
-            if(parammap.get("fileId")==null){
-                ret = false;
-            }
-        }else if(functionName.equals("delItemTip")){
-            if(parammap.get("tipId")==null){
-                ret = false;
-            }
-        }else if(functionName.equals("modifyProject")){
-            if(parammap.get("projectId")==null || parammap.get("projectName")==null || parammap.get("projectDes")==null) {
-                ret = false;
-            }
+        switch (functionName) {
+            case "createProject":
+                if (parammap.get("projectName") == null || parammap.get("projectDes") == null) {
+                    ret = false;
+                }
+                break;
+            case "createItem":
+                if (parammap.get("projectId") == null || parammap.get("itemName") == null || parammap.get("itemContent") == null || parammap.get("begintime") == null || parammap.get("endtime") == null) {
+                    ret = false;
+                }
+                break;
+            case "addItemTip":
+                if (parammap.get("projectId") == null || parammap.get("itemId") == null || parammap.get("tipContent") == null) {
+                    ret = false;
+                }
+                break;
+            case "addItemFile":
+                if (parammap.get("projectId") == null || parammap.get("itemId") == null || parammap.get("fileName") == null || parammap.get("filePath") == null) {
+                    ret = false;
+                }
+                break;
+            case "getProjectItems":
+                if (parammap.get("projectId") == null) {
+                    ret = false;
+                }
+                break;
+            case "delItemFile":
+                if (parammap.get("projectId") == null || parammap.get("fileId") == null) {
+                    ret = false;
+                }
+                break;
+            case "delItemTip":
+                if (parammap.get("projectId") == null || parammap.get("tipId") == null) {
+                    ret = false;
+                }
+                break;
+            case "delItem":
+                if (parammap.get("projectId") == null || parammap.get("itemId") == null) {
+                    ret = false;
+                }
+                break;
+            case "modifyProject":
+                if (parammap.get("projectId") == null || parammap.get("projectName") == null || parammap.get("projectDes") == null) {
+                    ret = false;
+                }
+                break;
+            case "modifyItem":
+                if (parammap.get("projectId") == null || parammap.get("itemId") == null || parammap.get("itemName") == null || parammap.get("itemContent") == null || parammap.get("begintime") == null || parammap.get("endtime") == null) {
+                    ret = false;
+                }
+                break;
+            case "modifyItemTip":
+                if (parammap.get("projectId") == null || parammap.get("itemId") == null || parammap.get("tipId") == null || parammap.get("tipContent") == null) {
+                    ret = false;
+                }
+                break;
         }
         return ret;
     }
@@ -508,5 +630,10 @@ public class MyhisService {
         }
 
         return ret;
+    }
+
+    private void renewLastTime(int tableindex,int projectId){
+        String nt = String.valueOf(GlobalTools.getTimeBefore(0));
+        mysqlDao.setProjectLastTime(tableindex,projectId,nt);
     }
 }
