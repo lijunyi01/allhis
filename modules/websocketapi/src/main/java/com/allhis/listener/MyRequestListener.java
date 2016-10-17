@@ -44,6 +44,12 @@ public class MyRequestListener implements DataListener<ClientReqBean> {
                     if (appAddress != null) {
                         serverAckBean = myhisService.doRequest(umid, functionName, data.getGeneralParam(), appAddress);
                     } else {
+                        //特殊处理，用于eatapple客户端项目（react－redux）测试
+                        if(umid==10000000){
+                            serverAckBean.setErrorCode("0");
+                            serverAckBean.setErrorMessage("success");
+                            serverAckBean.setGeneralAckContent("appleseq=10");
+                        }
                         log.error("get appaddress error! umid:{}", umid);
                     }
                     serverAckBean.setSerial(serial);

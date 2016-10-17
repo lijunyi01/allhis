@@ -31,8 +31,13 @@ public class MyAuthorizationListener implements AuthorizationListener {
 
         int umid = GlobalTools.convertStringToInt(umidS);
         if(umid>-1 && token !=null) {
-            if (userService.tokenCheck(umid, token)) {
+            //特殊处理，用于eatapple客户端项目（react－redux）测试
+            if(umid==10000000){
                 ret = true;
+            }else {
+                if (userService.tokenCheck(umid, token)) {
+                    ret = true;
+                }
             }
         }
         log.debug("client:{} with param umid:{} token:{} try to connect into,result:{}",clientAddress,umid,token,ret);
