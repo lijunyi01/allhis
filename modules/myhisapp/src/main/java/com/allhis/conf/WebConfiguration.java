@@ -32,6 +32,8 @@ public class WebConfiguration extends WebMvcConfigurerAdapter {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 //        registry.addInterceptor(localeChangeInterceptor());
-        registry.addInterceptor(myInterceptor1());
+        //客户端请求的路径如果匹配上了才会调用拦截器组；否则不经过拦截器
+        registry.addInterceptor(myInterceptor1()).addPathPatterns("/appinterface/*");
+        super.addInterceptors(registry);
     }
 }
