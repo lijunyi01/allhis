@@ -19,15 +19,15 @@ public class MyInterceptor1 extends HandlerInterceptorAdapter {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        boolean ret = false;
-        System.out.println("===========HandlerInterceptor1 preHandle");
-        String clientip = request.getRemoteAddr();
-        System.out.print("client ip is:"+ clientip);
-        if(clientip.equals("192.168.1.195")){
-            ret = true;
-        }
-//        response.sendRedirect("/greeting1");
-        return ret;
+//        boolean ret = false;
+//        System.out.println("===========HandlerInterceptor1 preHandle");
+//        String clientip = request.getRemoteAddr();
+//        System.out.print("client ip is:"+ clientip);
+//        if(clientip.equals("192.168.1.195")){
+//            ret = true;
+//        }
+//        return ret;
+        return true;
     }
 
     /**
