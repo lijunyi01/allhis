@@ -33,6 +33,7 @@ public class WebConfiguration extends WebMvcConfigurerAdapter {
     public void addInterceptors(InterceptorRegistry registry) {
 //        registry.addInterceptor(localeChangeInterceptor());
         //客户端请求的路径如果匹配上了才会调用拦截器组；否则不经过拦截器
+        //对所有路径应用拦截器需要写成：addPathPatterns("/**")  注意要两个星号！
         registry.addInterceptor(myInterceptor1()).addPathPatterns("/appinterface/*");
         super.addInterceptors(registry);
     }
