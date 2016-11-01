@@ -23,10 +23,14 @@ public class MyhisService {
 
     public ServerAckBean doRequest(int umid,String functionName,String generalParam,String appAddress){
         ServerAckBean serverAckBean = new ServerAckBean();
-        RetMessage retMessage;
+        RetMessage retMessage = null;
         String url = "http://{appAddress}/appinterface/gen?umid={umid}&functionName={functionName}&generalParam={generalParam}";
         log.debug("doRequest:"+ url);
-        retMessage = restTemplate.getForObject(url, RetMessage.class,appAddress,umid,functionName,generalParam);
+        try {
+            retMessage = restTemplate.getForObject(url, RetMessage.class, appAddress, umid, functionName, generalParam);
+        }catch (Exception e){
+            log.error("catch exception in query url:{}",e.toString());
+        }
         if(retMessage!=null){
             serverAckBean.setErrorCode(retMessage.getErrorCode());
             serverAckBean.setErrorMessage(retMessage.getErrorMessage());

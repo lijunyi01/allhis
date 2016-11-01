@@ -105,10 +105,15 @@ public class UserService {
 
     private int getDbIndex(int umid){
         int ret = -1;
-        RetMessage retMessage;
+        RetMessage retMessage = null;
         String url = getuserinfourl + "umid={umid}";
-        retMessage = restTemplate.getForObject(url, RetMessage.class,umid);
-        if(retMessage.getErrorCode().equals("0")) {
+        log.debug("do query url:{}",url);
+        try {
+            retMessage = restTemplate.getForObject(url, RetMessage.class, umid);
+        }catch (Exception e){
+            log.error("catch exception when query url:{}",toString());
+        }
+        if(retMessage!= null && retMessage.getErrorCode().equals("0")) {
             String retContent = retMessage.getRetContent();
             Map<String,String> map = jsonString2Map(retContent);
             if(map.get("dbindex")!=null){
@@ -160,7 +165,7 @@ public class UserService {
                 log.error("exception catched in json string converting to map! {}", e.toString());
             }
         }else{
-            log.error("invalid jsonstring! jsonstring:{}",jsonString);
+            jsonmap = new HashMap<>();
         }
         return jsonmap;
     }
