@@ -11,6 +11,11 @@ public class ItemBean {
     private int itemId;
     private String itemName;
     private String itemContent;
+    private int itemType;
+    private int startYear;
+    private int endYear;
+    private String startYearDes;
+    private String endYearDes;
     private String startTime;
     private String endTime;
     private List<Map<String,Object>> itemTipMapList;
@@ -21,6 +26,11 @@ public class ItemBean {
         this.itemContent = "";
         this.startTime = "";
         this.endTime = "";
+        this.itemType = 0;
+        this.startYear = 0;
+        this.endYear = 0;
+        this.startYearDes = "";
+        this.endYearDes = "";
     }
 
     public int getItemId() {
@@ -77,5 +87,45 @@ public class ItemBean {
 
     public void setItemFileMapList(List<Map<String, Object>> itemFileMapList) {
         this.itemFileMapList = itemFileMapList;
+    }
+
+    public int getItemType() {
+        return itemType;
+    }
+
+    public void setItemType(int itemType) {
+        this.itemType = itemType;
+    }
+
+    public int getStartYear() {
+        return startYear;
+    }
+
+    public void setStartYear(int startYear) {
+        this.startYear = startYear;
+    }
+
+    public int getEndYear() {
+        return endYear;
+    }
+
+    public void setEndYear(int endYear) {
+        this.endYear = endYear;
+    }
+
+    public String getStartYearDes() {
+        return startYearDes;
+    }
+
+    public void setStartYearDes(String startYearDes) {
+        this.startYearDes = startYearDes;
+    }
+
+    public String getEndYearDes() {
+        return endYearDes;
+    }
+
+    public void setEndYearDes(String endYearDes) {
+        this.endYearDes = endYearDes;
     }
 }

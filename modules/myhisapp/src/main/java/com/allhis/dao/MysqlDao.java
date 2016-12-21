@@ -46,19 +46,24 @@ public class MysqlDao {
         return ret;
     }
 
-    public int addItem(final int tableindex,final int umid,final int projectid,final String itemname, final String itemcontent, final String begintime, final String endtime){
+    public int addItem(final int tableindex,final int umid,final int projectid,final String itemname, final String itemcontent, final int startYear, final int endYear,final String startYearDes,final String endYearDes,final String startTime,final String endTime,int iType){
         int ret = -1;
         KeyHolder key=new GeneratedKeyHolder();
         jdbcTemplate.update(new PreparedStatementCreator(){
 
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                PreparedStatement preState=con.prepareStatement("insert into projectitem"+ tableindex +"(umid,projectid,itemname,itemcontent,begintime,endtime) values(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement preState=con.prepareStatement("insert into projectitem"+ tableindex +"(umid,projectid,itemname,itemcontent,startyear,endyear,startyear_des,endyear_des,starttime,endtime,itemtype) values(?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
                 preState.setInt(1,umid);
                 preState.setInt(2, projectid);
                 preState.setString(3, itemname);
                 preState.setString(4,itemcontent);
-                preState.setString(5,begintime);
-                preState.setString(6,endtime);
+                preState.setInt(5, startYear);
+                preState.setInt(6,endYear);
+                preState.setString(7,startYearDes);
+                preState.setString(8,endYearDes);
+                preState.setString(9,startTime);
+                preState.setString(10,endTime);
+                preState.setInt(11, iType);
                 return preState;
             }
         },key);
@@ -101,6 +106,15 @@ public class MysqlDao {
             }
         },key);
         ret = key.getKey().intValue();
+        return ret;
+    }
+
+    public boolean projectNameExists(int umid,String projectName,int tableindex){
+        boolean ret = false;
+        List<Map<String,Object>> mapList = jdbcTemplate.queryForList("select * from myproject"+tableindex+" where umid=? and projectname=?",umid,projectName);
+        if(mapList.size()>0){
+            ret = true;
+        }
         return ret;
     }
 
@@ -164,11 +178,11 @@ public class MysqlDao {
     }
 
     public List<Map<String,Object>> getItemTips(int umid,int tableindex,int projectId,int itemId){
-        return jdbcTemplate.queryForList("select id,tipcontent from itemtips" + tableindex +" where umid=? and projectid=? and itmeid=?",umid,projectId,itemId);
+        return jdbcTemplate.queryForList("select id,tipcontent from itemtips" + tableindex +" where umid=? and projectid=? and itemid=?",umid,projectId,itemId);
     }
 
     public List<Map<String,Object>> getItemFiles(int umid,int tableindex,int projectId,int itemId){
-        return jdbcTemplate.queryForList("select id,filename,filesuffix,filepath from itemfile" + tableindex +" where umid=? and projectid=? and itmeid=?",umid,projectId,itemId);
+        return jdbcTemplate.queryForList("select id,filename,filesuffix,filepath from itemfile" + tableindex +" where umid=? and projectid=? and itemid=?",umid,projectId,itemId);
     }
 
     public int delItemFile(int umid,int tableindex,int fileId){
@@ -216,7 +230,7 @@ public class MysqlDao {
     }
 
     public void setProjectLastTime(int tableindex,int projectId,String lasttime){
-        jdbcTemplate.update("update myproject"+tableindex+" set lasttiime=? where id=?",lasttime,projectId);
+        jdbcTemplate.update("update myproject"+tableindex+" set lasttime=? where id=?",lasttime,projectId);
     }
 
     public int modifyItem(final int tableindex,final int umid,final int itemid,final String itemname, final String itemcontent, final String begintime, final String endtime){

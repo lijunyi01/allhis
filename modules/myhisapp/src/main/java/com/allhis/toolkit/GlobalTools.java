@@ -132,6 +132,29 @@ public class GlobalTools {
         return iValue;
     }
 
+    //专用于转换公元年份，0表示转换失败，0是没意义的公元年份
+    public static int convertStringToInt2(String sValue) {
+        int iValue = 0;
+        if(sValue.startsWith("-")) {
+            if (isNumeric(sValue.substring(1))) {
+                try {
+                    iValue = 0 - Integer.parseInt(sValue.substring(1));
+                } catch (NumberFormatException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }else{
+            if (isNumeric(sValue)) {
+                try {
+                    iValue = Integer.parseInt(sValue);
+                } catch (NumberFormatException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        return iValue;
+    }
+
     public static long convertStringToLong(String sValue) {
         long lValue = -1000000000;
         if(isNumeric(sValue)) {

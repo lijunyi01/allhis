@@ -77,11 +77,16 @@ public class MyhisService {
             }
             case "createItem": {
                 int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                String itemType = parammap.get("type");
                 String itemName = parammap.get("itemName");
-                String itemContent = parammap.get("itemContent");
-                String begintime = parammap.get("begintime");
-                String endtime = parammap.get("endtime");
-                retMessage = createItem(umid, tableindex, projectId, itemName, itemContent, begintime, endtime);
+                String itemDes = parammap.get("itemDes");
+                String startYear = parammap.get("startYear");
+                String endYear = parammap.get("endYear");
+                String startYear_Des = parammap.get("startYear_des");
+                String endYear_Des = parammap.get("endYear_Des");
+                String startTime = parammap.get("startTime");
+                String endTime = parammap.get("endTime");
+                retMessage = createItem(umid, tableindex, projectId, itemType,itemName, itemDes,startYear,endYear,startYear_Des,endYear_Des,startTime,endTime);
 
                 break;
             }
@@ -350,12 +355,26 @@ public class MyhisService {
         for(Map<String,Object> map: mapList){
             int itemId = GlobalTools.convertStringToInt(map.get("id").toString());
             String itemName = map.get("itemname").toString();
-            String itemContent = null;
+            String itemContent = "";
             if(map.get("itemcontent")!=null){
                 itemContent= map.get("itemcontent").toString();
             }
-            String starttime = map.get("starttime").toString();
-            String endtime = null;
+            int startYear = GlobalTools.convertStringToInt(map.get("startyear").toString());
+            int endYear = GlobalTools.convertStringToInt(map.get("endyear").toString());
+            int itemType = GlobalTools.convertStringToInt(map.get("itemtype").toString());
+            String startYearDes = "";
+            if(map.get("startyear_des")!=null){
+                startYearDes = map.get("startyear_des").toString();
+            }
+            String endYearDes = "";
+            if(map.get("endyear_des")!=null){
+                endYearDes = map.get("endyear_des").toString();
+            }
+            String starttime = "";
+            if(map.get("starttime")!=null){
+                starttime = map.get("starttime").toString();
+            }
+            String endtime = "";
             if(map.get("endtime")!=null){
                 endtime = map.get("endtime").toString();
             }
@@ -364,13 +383,14 @@ public class MyhisService {
                 ItemBean itemBean = new ItemBean();
                 itemBean.setItemId(itemId);
                 itemBean.setItemName(itemName);
-                if(itemContent!=null){
-                    itemBean.setItemContent(itemContent);
-                }
+                itemBean.setItemContent(itemContent);
+                itemBean.setItemType(itemType);
+                itemBean.setStartYear(startYear);
+                itemBean.setEndYear(endYear);
+                itemBean.setStartYearDes(startYearDes);
+                itemBean.setEndYearDes(endYearDes);
                 itemBean.setStartTime(starttime);
-                if(endtime!=null){
-                    itemBean.setEndTime(endtime);
-                }
+                itemBean.setEndTime(endtime);
                 List<Map<String,Object>> tipMapList = mysqlDao.getItemTips(umid,tableindex,projectId,itemId);
                 List<Map<String,Object>> fileMapList = mysqlDao.getItemFiles(umid,tableindex,projectId,itemId);
                 itemBean.setItemTipMapList(tipMapList);
@@ -457,40 +477,96 @@ public class MyhisService {
     private RetMessage createProject(String projectname,int umid,int tableindex,String projectdes){
         RetMessage retMessage = new RetMessage();
 
-        //创建项目
-        String nt = String.valueOf(GlobalTools.getTimeBefore(0));
-        int projectId = mysqlDao.addProject(tableindex, umid, projectname, projectdes,nt);
-        if(projectId >0){   //project项目创建成功
-            retMessage.setErrorCode("0");
-            retMessage.setErrorMessage("success");
-            Map<String,Object> map = new HashMap<>();
-            map.put("projectId",projectId);
-            retMessage.setRetContent(map2JsonString(map));
-        }else{
+        if(mysqlDao.projectNameExists(umid,projectname,tableindex)){
             retMessage.setErrorCode("-1010");
-            retMessage.setErrorMessage("failed to create project");
-            log.error("cteate project failed,umid:{} projectname:{} tableindex:{}",umid,projectname,tableindex);
+            retMessage.setErrorMessage("projectname already exists");
+            log.error("cteate project failed for projectname already exists,umid:{} projectname:{} tableindex:{}", umid, projectname, tableindex);
+        }else {
+            //创建项目
+            String nt = String.valueOf(GlobalTools.getTimeBefore(0));
+            int projectId = mysqlDao.addProject(tableindex, umid, projectname, projectdes, nt);
+            if (projectId > 0) {   //project项目创建成功
+                retMessage.setErrorCode("0");
+                retMessage.setErrorMessage("success");
+                Map<String, Object> map = new HashMap<>();
+                map.put("projectId", projectId);
+                retMessage.setRetContent(map2JsonString(map));
+            } else {
+                retMessage.setErrorCode("-1011");
+                retMessage.setErrorMessage("failed to create project");
+                log.error("cteate project failed,umid:{} projectname:{} tableindex:{}", umid, projectname, tableindex);
+            }
         }
         return retMessage;
     }
 
-    private RetMessage createItem(int umid,int tableindex,int projectid,String itemname,String itemcontent,String begintime,String endtime){
+    private RetMessage createItem(int umid,int tableindex,int projectid,String itemType,String itemName,String itemDes,String startYear,String endYear,String startYearDes,String endYearDes,String startTime,String endTime){
         RetMessage retMessage = new RetMessage();
         //校验projectid是否存在
         if(mysqlDao.projectIdexists(umid,projectid,tableindex)){
-            int itemId = mysqlDao.addItem(tableindex,umid,projectid,itemname,itemcontent,begintime,endtime);
-            if(itemId > 0){
-                retMessage.setErrorCode("0");
-                retMessage.setErrorMessage("success");
-                Map<String,Object> map = new HashMap<>();
-                map.put("itmeId",itemId);
-                retMessage.setRetContent(map2JsonString(map));
-                //更新project表的最后修改时间
-                renewLastTime(tableindex,projectid);
+            int startYearNum =0;
+            int endYearNum =0;
+            int iType = GlobalTools.convertStringToInt(itemType);
+            int paramErrorFlag = 1;
+            if(iType == 1){   //点时间，公元纪年
+                startYearNum = GlobalTools.convertStringToInt2(startYear);
+                if(startYearNum == 0){
+                    paramErrorFlag = -1;
+                    log.error("start year[{}] is not valid! umid is:{}",startYear,umid);
+                }
+            }else if(iType == 2){  //点时间,年号纪年
+                //根据年号查公元年份
+                //startYearNum = getYearNumByNH(startYearDes);
+                if(startYearNum == 0){
+                    paramErrorFlag = -2;
+                    log.error("start nian hao [{}] is not valid! umid is:{}",startYearDes,umid);
+                }
+            }else if(iType == 3){  //段时间，公元纪年
+                startYearNum = GlobalTools.convertStringToInt2(startYear);
+                endYearNum = GlobalTools.convertStringToInt2(endYear);
+                if(startYearNum == 0 || endYearNum == 0){
+                    paramErrorFlag = -1;
+                    log.error("start year[{}] or end year[{}] is not valid! umid is:{}",startYear,endYear,umid);
+                }
+            }else if(iType == 4){  //段时间，年号纪年
+                //根据年号查公元年份
+                //startYearNum = getYearNumByNH(startYearDes);
+                //endYearNum = getYearNumByNH(endYearDes);
+                if(startYearNum == 0 || endYearNum == 0){
+                    paramErrorFlag = -2;
+                    log.error("start nian hao [{}] or end nian hao [{}] is not valid! umid is:{}",startYearDes,endYearDes,umid);
+                }
             }else{
-                retMessage.setErrorCode("-1020");
-                retMessage.setErrorMessage("failed to create itme");
-                log.error("cteate item failed,umid:{} projecid:{} itemname:{}",umid,projectid,itemname);
+                paramErrorFlag = -3;
+                log.error("itemtype[{}] is not valid! umid is:{}",iType,umid);
+            }
+
+            if(paramErrorFlag == 1) {
+                int itemId = mysqlDao.addItem(tableindex, umid, projectid, itemName, itemDes, startYearNum, endYearNum, startYearDes, endYearDes, startTime, endTime, iType);
+                if (itemId > 0) {
+                    retMessage.setErrorCode("0");
+                    retMessage.setErrorMessage("success");
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("itmeId", itemId);
+                    retMessage.setRetContent(map2JsonString(map));
+                    //更新project表的最后修改时间
+                    renewLastTime(tableindex, projectid);
+
+                    log.info("umid:{} success to create item[{}] for project[{}]",umid,itemId,projectid);
+                } else {
+                    retMessage.setErrorCode("-1020");
+                    retMessage.setErrorMessage("failed to create itme");
+                    log.error("cteate item failed,umid:{} projecid:{} itemname:{}", umid, projectid, itemName);
+                }
+            }else{
+                retMessage.setErrorCode("-1022");
+                if(paramErrorFlag == -1){
+                    retMessage.setErrorMessage("year is not valid");
+                }else if(paramErrorFlag == -2){
+                    retMessage.setErrorMessage("get year by nianhao failed");
+                }else if(paramErrorFlag == -3){
+                    retMessage.setErrorMessage("item type is not valid");
+                }
             }
         }else{
             retMessage.setErrorCode("-1021");
@@ -521,7 +597,7 @@ public class MyhisService {
                 }
                 break;
             case "createItem":
-                if (parammap.get("projectId") == null || parammap.get("itemName") == null || parammap.get("itemContent") == null || parammap.get("begintime") == null || parammap.get("endtime") == null) {
+                if (parammap.get("projectId") == null || parammap.get("itemName") == null || parammap.get("itemDes") == null) {
                     ret = false;
                 }
                 break;

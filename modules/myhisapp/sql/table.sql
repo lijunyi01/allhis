@@ -32,12 +32,26 @@ CREATE TABLE projectitem0(
     itemname VARCHAR(128) NOT NULL ,
     -- 事件更具体的内容
     itemcontent VARCHAR(1024) NULL ,
-    -- 事件开始时间
-    starttime DATETIME NOT NULL ,
-    -- 事件结束时间
-    endtime DATETIME NULL ,
+    -- 时间类型  1: 点时间，公元纪年； 2: 点时间，年号纪年；  3:段时间，公元纪年； 4:段时间，年号纪年
+    itemtype INT NOT NULL DEFAULT 0,
+    -- 事件开始年份  >0 公元后 ； <0 公元前 ； ＝0 初始值，无意义
+    startyear INT NOT NULL DEFAULT 0,
+    -- 事件开始年份（文字描述，年号等）
+    startyear_des VARCHAR(64),
+    -- 事件开始时间  格式：MM-DD hh:mm:ss；null 表示精确到年份
+    starttime VARCHAR(64),
+    -- 事件开始时间（文字描述,农历、阴历等）
+    -- starttime_des VARCHAR(64),
+    -- 事件结束年份  >0 公元后 ； <0 公元前 ； ＝0 初始值，无意义
+    endyear INT NOT NULL DEFAULT 0,
+    -- 事件结束年份（文字描述，年号等）
+    endyear_des VARCHAR(64),
+    -- 事件结束时间  格式：MM-DD hh:mm:ss；null 表示精确到年份
+    endtime VARCHAR(64),
+    -- 事件结束时间（文字描述,农历、阴历等）
+    -- endtime_des VARCHAR(64),
     PRIMARY KEY (id),
-    KEY (projectid,starttime),
+    KEY (projectid,startyear),
     KEY (umid)
 )ENGINE = MYISAM;
 
