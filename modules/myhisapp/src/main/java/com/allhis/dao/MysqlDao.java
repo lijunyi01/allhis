@@ -46,13 +46,13 @@ public class MysqlDao {
         return ret;
     }
 
-    public int addItem(final int tableindex,final int umid,final int projectid,final String itemname, final String itemcontent, final int startYear, final int endYear,final String startYearDes,final String endYearDes,final String startTime,final String endTime,int iType){
+    public int addItem(final int tableindex,final int umid,final int projectid,final String itemname, final String itemcontent, final int startYear, final int endYear,final String startYearDes,final String endYearDes,final String startTime,final String endTime,int iType,int istartNDFlag,int iendNDFlag){
         int ret = -1;
         KeyHolder key=new GeneratedKeyHolder();
         jdbcTemplate.update(new PreparedStatementCreator(){
 
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                PreparedStatement preState=con.prepareStatement("insert into projectitem"+ tableindex +"(umid,projectid,itemname,itemcontent,startyear,endyear,startyear_des,endyear_des,starttime,endtime,itemtype) values(?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement preState=con.prepareStatement("insert into projectitem"+ tableindex +"(umid,projectid,itemname,itemcontent,startyear,endyear,startyear_des,endyear_des,starttime,endtime,itemtype,startyearndflag,endyearndflag) values(?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
                 preState.setInt(1,umid);
                 preState.setInt(2, projectid);
                 preState.setString(3, itemname);
@@ -64,6 +64,8 @@ public class MysqlDao {
                 preState.setString(9,startTime);
                 preState.setString(10,endTime);
                 preState.setInt(11, iType);
+                preState.setInt(12,istartNDFlag);
+                preState.setInt(13,iendNDFlag);
                 return preState;
             }
         },key);
@@ -174,7 +176,7 @@ public class MysqlDao {
     }
 
     public List<Map<String,Object>> getProjectItems(int umid,int tableindex,int projectId){
-        return jdbcTemplate.queryForList("select * from projectitem" + tableindex +" where umid=? and projectid=?",umid,projectId);
+        return jdbcTemplate.queryForList("select * from projectitem" + tableindex +" where umid=? and projectid=? order by startyear",umid,projectId);
     }
 
     public List<Map<String,Object>> getItemTips(int umid,int tableindex,int projectId,int itemId){

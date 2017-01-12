@@ -81,12 +81,14 @@ public class MyhisService {
                 String itemName = parammap.get("itemName");
                 String itemDes = parammap.get("itemDes");
                 String startYear = parammap.get("startYear");
+                String startYearNDFlag = parammap.get("startYearNDFlag");
                 String endYear = parammap.get("endYear");
+                String endYearNDFlag = parammap.get("endYearNDFlag");
                 String startYear_Des = parammap.get("startYear_des");
                 String endYear_Des = parammap.get("endYear_Des");
                 String startTime = parammap.get("startTime");
                 String endTime = parammap.get("endTime");
-                retMessage = createItem(umid, tableindex, projectId, itemType,itemName, itemDes,startYear,endYear,startYear_Des,endYear_Des,startTime,endTime);
+                retMessage = createItem(umid, tableindex,projectId,itemType,itemName, itemDes,startYear,startYearNDFlag,endYear,endYearNDFlag,startYear_Des,endYear_Des,startTime,endTime);
 
                 break;
             }
@@ -362,6 +364,8 @@ public class MyhisService {
             int startYear = GlobalTools.convertStringToInt(map.get("startyear").toString());
             int endYear = GlobalTools.convertStringToInt(map.get("endyear").toString());
             int itemType = GlobalTools.convertStringToInt(map.get("itemtype").toString());
+            int startYearNDFlag = GlobalTools.convertStringToInt(map.get("startyearndflag").toString());
+            int endYearNDFlag = GlobalTools.convertStringToInt(map.get("endyearndflag").toString());
             String startYearDes = "";
             if(map.get("startyear_des")!=null){
                 startYearDes = map.get("startyear_des").toString();
@@ -386,7 +390,9 @@ public class MyhisService {
                 itemBean.setItemContent(itemContent);
                 itemBean.setItemType(itemType);
                 itemBean.setStartYear(startYear);
+                itemBean.setStartYearNDFlag(startYearNDFlag);
                 itemBean.setEndYear(endYear);
+                itemBean.setEndYearNDFlag(endYearNDFlag);
                 itemBean.setStartYearDes(startYearDes);
                 itemBean.setEndYearDes(endYearDes);
                 itemBean.setStartTime(starttime);
@@ -500,16 +506,20 @@ public class MyhisService {
         return retMessage;
     }
 
-    private RetMessage createItem(int umid,int tableindex,int projectid,String itemType,String itemName,String itemDes,String startYear,String endYear,String startYearDes,String endYearDes,String startTime,String endTime){
+    private RetMessage createItem(int umid,int tableindex,int projectid,String itemType,String itemName,String itemDes,String startYear,String startYearNDFlag,String endYear,String endYearNDFlag,String startYearDes,String endYearDes,String startTime,String endTime){
         RetMessage retMessage = new RetMessage();
         //校验projectid是否存在
         if(mysqlDao.projectIdexists(umid,projectid,tableindex)){
             int startYearNum =0;
             int endYearNum =0;
             int iType = GlobalTools.convertStringToInt(itemType);
+            int istartNDFlag = GlobalTools.convertStringToInt(startYearNDFlag);
+            int iendNDFlag = GlobalTools.convertStringToInt(endYearNDFlag);
             int paramErrorFlag = 1;
             if(iType == 1){   //点时间，公元纪年
                 startYearNum = GlobalTools.convertStringToInt2(startYear);
+                //为便于前台处理，点时间的endYearNum设置成等于startYearNum
+                endYearNum = startYearNum;
                 if(startYearNum == 0){
                     paramErrorFlag = -1;
                     log.error("start year[{}] is not valid! umid is:{}",startYear,umid);
@@ -517,6 +527,8 @@ public class MyhisService {
             }else if(iType == 2){  //点时间,年号纪年
                 //根据年号查公元年份
                 //startYearNum = getYearNumByNH(startYearDes);
+                //为便于前台处理，点时间的endYearNum设置成等于startYearNum
+                endYearNum = startYearNum;
                 if(startYearNum == 0){
                     paramErrorFlag = -2;
                     log.error("start nian hao [{}] is not valid! umid is:{}",startYearDes,umid);
@@ -542,7 +554,7 @@ public class MyhisService {
             }
 
             if(paramErrorFlag == 1) {
-                int itemId = mysqlDao.addItem(tableindex, umid, projectid, itemName, itemDes, startYearNum, endYearNum, startYearDes, endYearDes, startTime, endTime, iType);
+                int itemId = mysqlDao.addItem(tableindex, umid, projectid, itemName, itemDes, startYearNum, endYearNum, startYearDes, endYearDes, startTime, endTime, iType,istartNDFlag,iendNDFlag);
                 if (itemId > 0) {
                     retMessage.setErrorCode("0");
                     retMessage.setErrorMessage("success");

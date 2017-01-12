@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+
  * Created by ljy on 16/9/2.
  * ok
  */
@@ -13,7 +14,9 @@ public class ItemBean {
     private String itemContent;
     private int itemType;
     private int startYear;
+    private int startYearNDFlag;
     private int endYear;
+    private int endYearNDFlag;
     private String startYearDes;
     private String endYearDes;
     private String startTime;
@@ -31,6 +34,9 @@ public class ItemBean {
         this.endYear = 0;
         this.startYearDes = "";
         this.endYearDes = "";
+        this.startYearNDFlag = 0;
+        this.endYearNDFlag = 0;
+
     }
 
     public int getItemId() {
@@ -128,4 +134,21 @@ public class ItemBean {
     public void setEndYearDes(String endYearDes) {
         this.endYearDes = endYearDes;
     }
+
+    public int getStartYearNDFlag() {
+        return startYearNDFlag;
+    }
+
+    public void setStartYearNDFlag(int startYearNDFlag) {
+        this.startYearNDFlag = startYearNDFlag;
+    }
+
+    public int getEndYearNDFlag() {
+        return endYearNDFlag;
+    }
+
+    public void setEndYearNDFlag(int endYearNDFlag) {
+        this.endYearNDFlag = endYearNDFlag;
+    }
+
 }
