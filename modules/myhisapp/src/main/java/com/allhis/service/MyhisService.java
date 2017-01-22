@@ -131,6 +131,14 @@ public class MyhisService {
 
                 break;
             }
+            case "getItemTips": {
+                int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
+                int itemId = GlobalTools.convertStringToInt(parammap.get("itemId"));
+                retMessage = getItemTips(umid, tableindex, projectId, itemId);
+
+                break;
+            }
+
             case "delItemFile": {
                 int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
                 int fileId = GlobalTools.convertStringToInt(parammap.get("fileId"));
@@ -424,6 +432,26 @@ public class MyhisService {
         return retMessage;
     }
 
+    private RetMessage getItemTips(int umid,int tableindex,int projectId,int itemId){
+        RetMessage retMessage = new RetMessage();
+
+        List<Map<String,Object>> tipMapList = mysqlDao.getItemTips(umid,tableindex,projectId,itemId);
+
+        //将List<Map<String,Object>> tipMapList 序列化
+        String serializedTipMapList = maplist2JsonString(tipMapList);
+        if(serializedTipMapList != null) {
+            retMessage.setErrorCode("0");
+            retMessage.setErrorMessage("success");
+            retMessage.setRetContent(serializedTipMapList);
+        }else{
+            retMessage.setErrorCode("-1050");
+            retMessage.setErrorMessage("failed to serialize tipMapList!");
+            log.error("failed to serialize tipMapList! umid:{} projectid:{} itemId:{}",umid,projectId,itemId);
+        }
+
+        return retMessage;
+    }
+
     private RetMessage addItemFile(int umid,int tableindex,int projectId,int itemId,String fileName,String filePath){
         RetMessage retMessage = new RetMessage();
         //校验itemId是否存在
@@ -625,6 +653,11 @@ public class MyhisService {
                 break;
             case "getProjectItems":
                 if (parammap.get("projectId") == null) {
+                    ret = false;
+                }
+                break;
+            case "getItemTips":
+                if (parammap.get("projectId") == null || parammap.get("itemId") == null) {
                     ret = false;
                 }
                 break;
