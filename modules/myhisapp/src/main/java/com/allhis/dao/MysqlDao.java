@@ -235,8 +235,8 @@ public class MysqlDao {
         jdbcTemplate.update("update myproject"+tableindex+" set lasttime=? where id=?",lasttime,projectId);
     }
 
-    public int modifyItem(final int tableindex,final int umid,final int itemid,final String itemname, final String itemcontent, final String begintime, final String endtime){
-        return jdbcTemplate.update("update projectitem"+tableindex+" set itemname=?,itemcontent=?,begintime=?,endtime=? where id=? and umid=?",itemname,itemcontent,begintime,endtime,itemid,umid);
+    public int modifyItem(final int tableindex,final int umid,final int itemid,final String itemname, final String itemcontent, final int startYear, final int endYear,final String startYearDes,final String endYearDes,final String startTime,final String endTime,int iType,int istartNDFlag,int iendNDFlag){
+        return jdbcTemplate.update("update projectitem"+tableindex+" set itemtype=?,itemname=?,itemcontent=?,startyear=?,startyearndflag=?,startyear_des=?,starttime=?,endyear=?,endyearndflag=?,endyear_des=?,endtime=? where id=? and umid=?",iType,itemname,itemcontent,startYear,istartNDFlag,startYearDes,startTime,endYear,iendNDFlag,endYearDes,endTime,itemid,umid);
     }
 
     public int modifyItemTip(final int tableindex,final int umid,final int tipid, final String tipcontent){

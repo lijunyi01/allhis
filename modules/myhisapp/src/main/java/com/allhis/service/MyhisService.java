@@ -128,7 +128,6 @@ public class MyhisService {
             case "getProjectItems": {
                 int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
                 retMessage = getProjectItems(umid, tableindex, projectId);
-
                 break;
             }
             case "getItemTips": {
@@ -177,11 +176,18 @@ public class MyhisService {
             case "modifyItem": {
                 int projectId = GlobalTools.convertStringToInt(parammap.get("projectId"));
                 int itemId = GlobalTools.convertStringToInt(parammap.get("itemId"));
+                String itemType = parammap.get("type");
                 String itemName = parammap.get("itemName");
-                String itemContent = parammap.get("itemContent");
-                String begintime = parammap.get("begintime");
-                String endtime = parammap.get("endtime");
-                retMessage = modifyItem(umid, tableindex, projectId, itemId, itemName, itemContent, begintime, endtime);
+                String itemDes = parammap.get("itemDes");
+                String startYear = parammap.get("startYear");
+                String startYearNDFlag = parammap.get("startYearNDFlag");
+                String endYear = parammap.get("endYear");
+                String endYearNDFlag = parammap.get("endYearNDFlag");
+                String startYear_Des = parammap.get("startYear_des");
+                String endYear_Des = parammap.get("endYear_Des");
+                String startTime = parammap.get("startTime");
+                String endTime = parammap.get("endTime");
+                retMessage = modifyItem(umid, tableindex, projectId,itemId,itemType,itemName,itemDes,startYear,startYearNDFlag,endYear,endYearNDFlag,startYear_Des,endYear_Des,startTime,endTime);
 
                 break;
             }
@@ -217,18 +223,72 @@ public class MyhisService {
         return retMessage;
     }
 
-    private RetMessage modifyItem(int umid,int tableindex,int projectId,int itemId,String itemName,String itemContent,String begintime,String endtime){
+    private RetMessage modifyItem(int umid,int tableindex,int projectId,int itemId,String itemType,String itemName,String itemDes,String startYear,String startYearNDFlag,String endYear,String endYearNDFlag,String startYearDes,String endYearDes,String startTime,String endTime){
         RetMessage retMessage = new RetMessage();
         if(mysqlDao.itemIdexists(umid,itemId,tableindex)){
-            if(mysqlDao.modifyItem(tableindex,umid,itemId,itemName,itemContent,begintime,endtime)>0){
-                retMessage.setErrorCode("0");
-                retMessage.setErrorMessage("success");
-                //更新project表的最后修改时间
-                renewLastTime(tableindex,projectId);
+            int startYearNum =0;
+            int endYearNum =0;
+            int iType = GlobalTools.convertStringToInt(itemType);
+            int istartNDFlag = GlobalTools.convertStringToInt(startYearNDFlag);
+            int iendNDFlag = GlobalTools.convertStringToInt(endYearNDFlag);
+            int paramErrorFlag = 1;
+            if(iType == 1){   //点时间，公元纪年
+                startYearNum = GlobalTools.convertStringToInt2(startYear);
+                //为便于前台处理，点时间的endYearNum设置成等于startYearNum
+                endYearNum = startYearNum;
+                if(startYearNum == 0){
+                    paramErrorFlag = -1;
+                    log.error("start year[{}] is not valid! umid is:{}",startYear,umid);
+                }
+            }else if(iType == 2){  //点时间,年号纪年
+                //根据年号查公元年份
+                //startYearNum = getYearNumByNH(startYearDes);
+                //为便于前台处理，点时间的endYearNum设置成等于startYearNum
+                endYearNum = startYearNum;
+                if(startYearNum == 0){
+                    paramErrorFlag = -2;
+                    log.error("start nian hao [{}] is not valid! umid is:{}",startYearDes,umid);
+                }
+            }else if(iType == 3){  //段时间，公元纪年
+                startYearNum = GlobalTools.convertStringToInt2(startYear);
+                endYearNum = GlobalTools.convertStringToInt2(endYear);
+                if(startYearNum == 0 || endYearNum == 0){
+                    paramErrorFlag = -1;
+                    log.error("start year[{}] or end year[{}] is not valid! umid is:{}",startYear,endYear,umid);
+                }
+            }else if(iType == 4){  //段时间，年号纪年
+                //根据年号查公元年份
+                //startYearNum = getYearNumByNH(startYearDes);
+                //endYearNum = getYearNumByNH(endYearDes);
+                if(startYearNum == 0 || endYearNum == 0){
+                    paramErrorFlag = -2;
+                    log.error("start nian hao [{}] or end nian hao [{}] is not valid! umid is:{}",startYearDes,endYearDes,umid);
+                }
             }else{
-                retMessage.setErrorCode("-1110");
-                retMessage.setErrorMessage("modify item failed");
-                log.error("modify item failed! umid:{} itemid:{}", umid, itemId);
+                paramErrorFlag = -3;
+                log.error("itemtype[{}] is not valid! umid is:{}",iType,umid);
+            }
+
+            if(paramErrorFlag == 1) {
+                if (mysqlDao.modifyItem(tableindex, umid, itemId, itemName, itemDes, startYearNum, endYearNum,startYearDes, endYearDes, startTime, endTime,iType,istartNDFlag,iendNDFlag) > 0) {
+                    retMessage.setErrorCode("0");
+                    retMessage.setErrorMessage("success");
+                    //更新project表的最后修改时间
+                    renewLastTime(tableindex, projectId);
+                } else {
+                    retMessage.setErrorCode("-1110");
+                    retMessage.setErrorMessage("modify item failed");
+                    log.error("modify item failed! umid:{} itemid:{}", umid, itemId);
+                }
+            }else{
+                retMessage.setErrorCode("-1022");
+                if(paramErrorFlag == -1){
+                    retMessage.setErrorMessage("year is not valid");
+                }else if(paramErrorFlag == -2){
+                    retMessage.setErrorMessage("get year by nianhao failed");
+                }else if(paramErrorFlag == -3){
+                    retMessage.setErrorMessage("item type is not valid");
+                }
             }
         }else{
             retMessage.setErrorCode("-1081");
@@ -682,7 +742,7 @@ public class MyhisService {
                 }
                 break;
             case "modifyItem":
-                if (parammap.get("projectId") == null || parammap.get("itemId") == null || parammap.get("itemName") == null || parammap.get("itemContent") == null || parammap.get("begintime") == null || parammap.get("endtime") == null) {
+                if (parammap.get("projectId") == null || parammap.get("itemId") == null || parammap.get("itemName") == null || parammap.get("itemDes") == null || parammap.get("startYear") == null) {
                     ret = false;
                 }
                 break;
