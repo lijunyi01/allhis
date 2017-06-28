@@ -20,13 +20,21 @@ public class AccountService {
     @Value("${system.authcenterurl}")
     private String authcenterurl;
 
+    private final RestTemplate restTemplate;
+
     @Autowired
-    private RestTemplate restTemplate;
+    public AccountService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public RetMessage auth(String username,String password,String clientIp,String area){
-        RetMessage retMessage;
+        RetMessage retMessage = null;
         String authurl = authcenterurl + "name="+username+"&pass="+password+"&ip="+clientIp+"&platform=web";
-        retMessage = restTemplate.getForObject(authurl, RetMessage.class);
+        try {
+            retMessage = restTemplate.getForObject(authurl, RetMessage.class);
+        }catch (Exception e){
+            log.error("catch exception! {}",e.toString());
+        }
         return retMessage;
     }
 }

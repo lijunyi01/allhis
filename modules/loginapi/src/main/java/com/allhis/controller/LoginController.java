@@ -6,13 +6,14 @@ import com.allhis.bean.RetMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.NamedThreadLocal;
+//import org.springframework.core.NamedThreadLocal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
+//import java.util.Map;
 
 /**
  * Created by ljy on 15/5/12.
@@ -21,19 +22,25 @@ import java.util.Map;
  * 访问http://localhost:8080/greeting?name=ljy 即可
  */
 
+@CrossOrigin
 @RestController
+@RequestMapping("/ah_loginapi")
 public class LoginController {
 
-    @Autowired
-    private AccountService accountService;
+    private final AccountService accountService;
 
     private static Logger log = LoggerFactory.getLogger(LoginController.class);
+
+    @Autowired
+    public LoginController(AccountService accountService) {
+        this.accountService = accountService;
+    }
 
     //  客户端访问URL  http://222.46.16.172:83/ah_loginapi/login?username=test@139email.com&password=111111
     @RequestMapping(value = "/login")
     public RetMessage loginAuth(
-            @RequestParam(value="username",required = true) String username,
-            @RequestParam(value="password",required = true) String password,
+            @RequestParam(value="username") String username,
+            @RequestParam(value="password") String password,
             @RequestParam(value = "devicetype",required = false,defaultValue = "web") String devicetype,
             @RequestParam(value = "deviceinfo",required = false,defaultValue = "")String deviceinfo,
 //            @RequestParam(value = "ip",required = false,defaultValue = "")String ip,
@@ -41,7 +48,7 @@ public class LoginController {
             HttpServletRequest httpServletRequest
     ) {
 
-        RetMessage ret = null;
+        RetMessage ret;
         String clientIp = httpServletRequest.getRemoteAddr();
         log.info("userlogin,username is:"+username +" and password is:"+password + " and ip is:"+clientIp);
         ret = accountService.auth(username,password,clientIp,area);
