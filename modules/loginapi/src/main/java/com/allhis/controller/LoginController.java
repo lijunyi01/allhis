@@ -49,7 +49,10 @@ public class LoginController {
     ) {
 
         RetMessage ret;
-        String clientIp = httpServletRequest.getRemoteAddr();
+        String clientIp = httpServletRequest.getHeader("X-Real-IP");
+        if(clientIp == null){
+            clientIp = httpServletRequest.getRemoteAddr();
+        }
         log.info("userlogin,username is:"+username +" and password is:"+password + " and ip is:"+clientIp);
         ret = accountService.auth(username,password,clientIp,area);
         return ret;
