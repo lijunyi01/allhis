@@ -13,11 +13,12 @@ import org.springframework.stereotype.Component;
 public class ScheduledTasks {
 	private static Logger log = LoggerFactory.getLogger(ScheduledTasks.class);
 
-	@Autowired
-	AuthService authService;
+	final AuthService authService;
 
-    public ScheduledTasks(){
-    }
+    @Autowired
+	public ScheduledTasks(AuthService authService){
+		this.authService = authService;
+	}
 
     //定期删除token表里的过期数据
     @Scheduled(cron = "${jobs.schedule1}")
