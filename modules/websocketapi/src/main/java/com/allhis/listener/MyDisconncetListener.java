@@ -5,10 +5,12 @@ import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
+@Component
 public class MyDisconncetListener implements DisconnectListener {
 
     private static Logger log = LoggerFactory.getLogger(MyDisconncetListener.class);

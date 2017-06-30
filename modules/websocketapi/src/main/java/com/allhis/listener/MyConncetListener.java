@@ -8,13 +8,15 @@ import com.corundumstudio.socketio.listener.ConnectListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+//import java.util.UUID;
 
 /**
  * Created by ljy on 16/2/25.
  * ok
  */
+@Component
 public class MyConncetListener implements ConnectListener {
 
     private static Logger log = LoggerFactory.getLogger(MyConncetListener.class);
@@ -33,7 +35,7 @@ public class MyConncetListener implements ConnectListener {
         HandshakeData handshakeData = socketIOClient.getHandshakeData();
         String umidS = handshakeData.getSingleUrlParam("umid");
         int umid = GlobalTools.convertStringToInt(umidS);
-        if(umid>0 && socketIOClient !=null) {
+        if(umid>0) {
             userService.recordUmidAndSocket(umid, socketIOClient);
             log.debug("umid:{} connected from:{}", umid, clientAddress);
         }else{

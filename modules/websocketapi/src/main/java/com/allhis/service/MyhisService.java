@@ -18,8 +18,12 @@ import org.springframework.web.client.RestTemplate;
 public class MyhisService {
     private static Logger log = LoggerFactory.getLogger(MyhisService.class);
 
+    private final RestTemplate restTemplate;
+
     @Autowired
-    private RestTemplate restTemplate;
+    public MyhisService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public ServerAckBean doRequest(int umid,String functionName,String generalParam,String appAddress){
         ServerAckBean serverAckBean = new ServerAckBean();

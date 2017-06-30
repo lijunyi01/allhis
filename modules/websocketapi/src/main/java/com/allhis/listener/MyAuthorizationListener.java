@@ -4,26 +4,51 @@ import com.allhis.service.UserService;
 import com.allhis.toolkit.GlobalTools;
 import com.corundumstudio.socketio.AuthorizationListener;
 import com.corundumstudio.socketio.HandshakeData;
+//import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Set;
+
+//import javax.xml.ws.spi.http.HttpHandler;
 
 /**
  * Created by ljy on 16/3/3.
  * ok
  */
+@Component
 public class MyAuthorizationListener implements AuthorizationListener {
 
     private static Logger log = LoggerFactory.getLogger(MyAuthorizationListener.class);
 
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
+    public MyAuthorizationListener(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public boolean isAuthorized(HandshakeData handshakeData) {
         boolean ret = false;
-        String clientAddress = null;
-        if(handshakeData.getAddress()!=null){
+        String clientAddress;
+
+//        HttpHeaders httpHeaders1 = handshakeData.getHttpHeaders();
+//        Set<String> sets = httpHeaders1.names();
+//        for(String str: sets){
+//            String value = httpHeaders1.get(str);
+//            log.debug("set: {} -- {}",str,value);
+//        }
+
+        HttpHeaders httpHeaders = handshakeData.getHttpHeaders();
+        clientAddress = httpHeaders.get("X-Real-IP");
+//        log.debug("ip from httpheader x-real-ip:{}",clientAddress);
+
+        if(clientAddress==null && handshakeData.getAddress()!=null){
             clientAddress = handshakeData.getAddress().toString();
         }
         String umidS = handshakeData.getSingleUrlParam("umid");

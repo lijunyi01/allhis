@@ -12,15 +12,22 @@ import com.corundumstudio.socketio.listener.DataListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MyRequestListener implements DataListener<ClientReqBean> {
 
     private static Logger log = LoggerFactory.getLogger(MyRequestListener.class);
 
+
+    private final MyhisService myhisService;
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
-    @Autowired
-    private MyhisService myhisService;
+    public MyRequestListener(MyhisService myhisService, UserService userService) {
+        this.myhisService = myhisService;
+        this.userService = userService;
+    }
 
     @Override
     public void onData(SocketIOClient socketIOClient, ClientReqBean data, AckRequest ackSender) throws Exception {

@@ -36,10 +36,14 @@ public class UserService {
     @Value("#{'${myhisapp.param}'.split('\\<\\[CDATA\\]\\>')}")
     private List<String> paramStrList;
 
+    private final RestTemplate restTemplate;
+    private final ObjectMapper mapper;
+
     @Autowired
-    private RestTemplate restTemplate;
-    @Autowired
-    private ObjectMapper mapper;
+    public UserService(RestTemplate restTemplate, ObjectMapper mapper) {
+        this.restTemplate = restTemplate;
+        this.mapper = mapper;
+    }
 
     public void recordUmidAndSocket(int umid,SocketIOClient socketIOClient){
 
