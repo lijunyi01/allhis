@@ -340,7 +340,7 @@ public class MyhisService {
     }
 
     @Transactional
-    private void deleteProject(int umid,int tableindex,int projectId){
+    void deleteProject(int umid,int tableindex,int projectId){
         mysqlDao.delItemFiles(umid,tableindex,projectId,1);
         mysqlDao.delItemTips(umid,tableindex,projectId,1);
         mysqlDao.delItemsByProjectId(umid, tableindex, projectId);
@@ -370,7 +370,7 @@ public class MyhisService {
     }
 
     @Transactional
-    private void deleteItem(int umid,int tableindex,int itemId){
+    void deleteItem(int umid,int tableindex,int itemId){
         mysqlDao.delItemFiles(umid,tableindex,itemId,2);
         mysqlDao.delItemTips(umid,tableindex,itemId,2);
         mysqlDao.delItem(umid,tableindex,itemId);
@@ -422,6 +422,10 @@ public class MyhisService {
         RetMessage retMessage = new RetMessage();
         List<Map<String,Object>> mapList = mysqlDao.getProjectItems(umid,tableindex,projectId);
         List<ItemBean> itemBeanList = new ArrayList<>();
+        Map<String,Object> retMap = new HashMap<>();
+        // 遍历比较出某一项目下所有事件卡片中的最早时间和最晚时间
+        int earlyYear = 1000000;
+        int lastYear = 1000000;
         for(Map<String,Object> map: mapList){
             int itemId = GlobalTools.convertStringToInt(map.get("id").toString());
             String itemName = map.get("itemname").toString();
@@ -431,6 +435,21 @@ public class MyhisService {
             }
             int startYear = GlobalTools.convertStringToInt(map.get("startyear").toString());
             int endYear = GlobalTools.convertStringToInt(map.get("endyear").toString());
+            if(earlyYear == 1000000) {
+                earlyYear = startYear;
+            }else{
+                if(startYear < earlyYear) {
+                    earlyYear = startYear;
+                }
+            }
+            if(lastYear == 1000000) {
+                lastYear = endYear;
+            }else{
+                if(endYear > lastYear) {
+                    lastYear = endYear;
+                }
+            }
+
             int itemType = GlobalTools.convertStringToInt(map.get("itemtype").toString());
             int startYearNDFlag = GlobalTools.convertStringToInt(map.get("startyearndflag").toString());
             int endYearNDFlag = GlobalTools.convertStringToInt(map.get("endyearndflag").toString());
@@ -477,12 +496,25 @@ public class MyhisService {
             }
         }
 
+        int yearLength = lastYear - earlyYear;
+        int pxPerYear = getPxPerYear(yearLength);
+        int yearInterval = getYearInterval(yearLength);
+        int timeLineBeginYear = getTimeLineBeginYear(earlyYear,yearInterval);
+
+        retMap.put("earlyYear",earlyYear);
+        retMap.put("lastYear",lastYear);
+        retMap.put("pxPerYear",pxPerYear);
+        retMap.put("yearInterval",yearInterval);
+        retMap.put("timeLineBeginYear",timeLineBeginYear);
+        retMap.put("itemList",itemBeanList);
+
         //将List<ItemBean> itemBeanList 序列化
-        String serializedItemBeanList = beanlist2JsonString(itemBeanList);
-        if(serializedItemBeanList != null) {
+//        String serializedItemBeanList = beanlist2JsonString(itemBeanList);
+        String serializedRetMap = map2JsonString(retMap);
+        if(serializedRetMap != null) {
             retMessage.setErrorCode("0");
             retMessage.setErrorMessage("success");
-            retMessage.setRetContent(serializedItemBeanList);
+            retMessage.setRetContent(serializedRetMap);
         }else{
             retMessage.setErrorCode("-1050");
             retMessage.setErrorMessage("failed to serialize itemBeanList!");
@@ -816,5 +848,55 @@ public class MyhisService {
     private void renewLastTime(int tableindex,int projectId){
         String nt = String.valueOf(GlobalTools.getTimeBefore(0));
         mysqlDao.setProjectLastTime(tableindex,projectId,nt);
+    }
+
+    private int getPxPerYear(int yearLength) {
+        int ret;
+        if(yearLength <50){
+            ret = 30;
+        }else if(yearLength <100){
+            ret = 20;
+        }else if(yearLength <500){
+            ret = 10;
+        }else if(yearLength <1000){
+            ret = 5;
+        }else if(yearLength <5000){
+            ret = 1;
+        }else{
+            ret = 5000/yearLength;
+        }
+        return ret;
+    }
+
+    private int getYearInterval(int yearLength) {
+        int ret;
+        if(yearLength <50){
+            ret = 5;
+        }else if(yearLength <100){
+            ret = 10;
+        }else if(yearLength <500){
+            ret = 25;
+        }else if(yearLength <1000){
+            ret = 50;
+        }else if(yearLength <5000){
+            ret = 100;
+        }else{
+            ret = 200;
+        }
+        return ret;
+    }
+
+    private int getTimeLineBeginYear(int earlyYear, int yearInterval) {
+        int ret = 0;
+        if(earlyYear < 0){
+            ret = ((earlyYear/yearInterval)-1)*yearInterval;
+        }else{
+            if(earlyYear == (earlyYear/yearInterval)*yearInterval){    //earlyYear 在箭头起点,则将箭头起点提前
+                ret = earlyYear - yearInterval;
+            }else {
+                ret = (earlyYear / yearInterval) * yearInterval;
+            }
+        }
+        return ret;
     }
 }

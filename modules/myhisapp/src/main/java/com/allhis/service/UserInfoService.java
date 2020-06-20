@@ -29,6 +29,8 @@ public class UserInfoService {
 
     @Value("${system.gettableindexurl}")
     private String url;
+    @Value("${system.authtokenurl}")
+    private String authtokenurl;
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -90,6 +92,20 @@ public class UserInfoService {
             log.error("invalid jsonstring! jsonstring:{}",jsonString);
         }
         return jsonmap;
+    }
+
+    //向authcenter进行token校验
+    public boolean tokenCheck(int umid,String token){
+        boolean ret = false;
+        RetMessage retMessage;
+        String authurl = authtokenurl + "umid={umid}&token={token}";
+        retMessage = restTemplate.getForObject(authurl, RetMessage.class,umid,token);
+        if(retMessage.getErrorCode().equals("0")){
+            ret = true;
+        }else{
+            log.info("umid:{} token check failed! token:{}",umid,token);
+        }
+        return ret;
     }
 }
 

@@ -1,5 +1,8 @@
 package com.allhis.interceptor;
 
+import com.allhis.service.UserInfoService;
+import com.allhis.toolkit.GlobalTools;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -11,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
  * ok
  */
 public class MyInterceptor1 extends HandlerInterceptorAdapter {
+    @Autowired
+    UserInfoService userInfoService;
     /**
      * preHandle方法是进行处理器拦截用的，顾名思义，该方法将在Controller处理之前进行调用，SpringMVC中的Interceptor拦截器是链式的，可以同时存在
      * 多个Interceptor，然后SpringMVC会根据声明的前后顺序一个接一个的执行，而且所有的Interceptor中的preHandle方法都会在
@@ -27,7 +32,20 @@ public class MyInterceptor1 extends HandlerInterceptorAdapter {
 //            ret = true;
 //        }
 //        return ret;
-        return true;
+//        return true;
+        String method = request.getMethod();
+        if(method.equals("OPTIONS")){
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return true;
+        }else {
+            int umid = GlobalTools.convertStringToInt(request.getHeader("Umid"));
+            String authToken = request.getHeader("Authentication");
+            boolean ret =  userInfoService.tokenCheck(umid, authToken);
+            if(ret == false) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            }
+            return ret;
+        }
     }
 
     /**

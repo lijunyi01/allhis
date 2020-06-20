@@ -58,32 +58,32 @@ public class ApplicationConfig {
 
     //在标注了@Configuration的java类中，通过在类方法标注@Bean定义一个Bean。方法必须提供Bean的实例化逻辑。
     //通过@Bean的name属性可以定义Bean的名称，未指定时默认名称为方法名。
-    @Bean
-    public static PropertyPlaceholderConfigurer propertyPlaceholderConfigurer() {
-        PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
-        //ClassPathResource 的根目录在本项目是指resources目录
-        //ppc.setLocation(new ClassPathResource("/test.properties"));
-        ppc.setLocation(new FileSystemResource("/appconf/ah_myhisapp/app.properties"));
-        return ppc;
-    }
+//    @Bean
+//    public static PropertyPlaceholderConfigurer propertyPlaceholderConfigurer() {
+//        PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
+//        //ClassPathResource 的根目录在本项目是指resources目录
+//        //ppc.setLocation(new ClassPathResource("/test.properties"));
+//        ppc.setLocation(new FileSystemResource("/appconf/ah_myhisapp/app.properties"));
+//        return ppc;
+//    }
 
-    @Bean
-    public static JoranConfigurator readLogbackPropertyFile(){
-        File logbackFile = new File("/appconf/ah_myhisapp/logback.xml");
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        JoranConfigurator configurator = new JoranConfigurator();
-        configurator.setContext(lc);
-        lc.reset();
-        try {
-            configurator.doConfigure(logbackFile);
-        }
-        catch (JoranException e) {
-            e.printStackTrace(System.err);
-            System.exit(-1);
-        }
-        return configurator;
-
-    }
+//    @Bean
+//    public static JoranConfigurator readLogbackPropertyFile(){
+//        File logbackFile = new File("/appconf/ah_myhisapp/logback.xml");
+//        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+//        JoranConfigurator configurator = new JoranConfigurator();
+//        configurator.setContext(lc);
+//        lc.reset();
+//        try {
+//            configurator.doConfigure(logbackFile);
+//        }
+//        catch (JoranException e) {
+//            e.printStackTrace(System.err);
+//            System.exit(-1);
+//        }
+//        return configurator;
+//
+//    }
 
     @Bean(name="jdbctemplate1")
     JdbcTemplate jdbcTemplate(@Qualifier("db1")DataSource dataSource) {
